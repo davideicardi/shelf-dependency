@@ -1,0 +1,26 @@
+{
+  "name": "shelf-dependency",
+  "version": "0.1.0",
+  "description": "Poor Man’s Dependency Injection for node.js",
+  "main": "ShelfDependency.js",
+  "scripts": {
+    "test": "mocha -w *.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davideicardi/shelf-dependency.git"
+  },
+  "keywords": [
+    "dependency-injection",
+    "container"
+  ],
+  "author": "Davide Icardi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davideicardi/shelf-dependency/issues"
+  },
+  "homepage": "https://github.com/davideicardi/shelf-dependency",
+  "devDependencies": {
+    "chai": "^3.0.0"
+  }
+}
