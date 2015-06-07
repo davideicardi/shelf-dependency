@@ -5,9 +5,10 @@ It allows dependency injection (see [Dependency Injection](http://en.wikipedia.o
 
 The main goals of **shelf-dependency** are:
 - don't require any special conventions for modules
-- easy to setup
+- require support
 - easy to unit test
 - convention over configuration
+- extensible
 
 ## Usage
 
