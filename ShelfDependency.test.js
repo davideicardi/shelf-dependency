@@ -53,6 +53,42 @@ describe("ShelfDependency.js", function(){
     });
   });
 
+  describe("when registering or resolving a component special characters are removed from compoonent name", function(){
+    function SocketIO(){
+    }
+    function SqlServer(){
+    }
+
+    beforeEach(function(){
+      shelf.register("Socket.IO", SocketIO);
+      shelf.register("sql-server", SqlServer);
+    });
+
+    it("component name can contains dots", function(){
+      var cmp = shelf.resolve("socket.IO");
+
+      assert.instanceOf(cmp, SocketIO);
+    });
+
+    it("component can be resolved without dots", function(){
+      var cmp = shelf.resolve("socketIO");
+
+      assert.instanceOf(cmp, SocketIO);
+    });
+
+    it("component name can contains dashes", function(){
+      var cmp = shelf.resolve("sql-server");
+
+      assert.instanceOf(cmp, SqlServer);
+    });
+
+    it("component can be resolved without dashes", function(){
+      var cmp = shelf.resolve("sqlserver");
+
+      assert.instanceOf(cmp, SqlServer);
+    });
+  });
+
   describe("component name is case insensitive", function(){
 
     function MyClass1(){
@@ -228,9 +264,32 @@ describe("ShelfDependency.js", function(){
     });
   });
 
-  describe("unregistered components are searched with standard require", function(){
+  describe("standard require can be used to resolve components", function(){
+
+    function MySampleClass(http){
+      this.http = http;
+    }
+
+    beforeEach(function(){
+      shelf.use(ShelfDependency.requireFacility);
+      shelf.register("MySampleClass", MySampleClass);
+    });
+
     it("resolving a dependencies with a require module", function(){
-      throw "TODO";
+      var cmp = shelf.resolve("MySampleClass");
+
+      assert.instanceOf(cmp, MySampleClass);
+      assert.equal(cmp.http, require("http"));
+    });
+
+    it("an explicitly registered component wins over a require", function(){
+      var myHttp = {};
+      shelf.register("http", myHttp)
+
+      var cmp = shelf.resolve("MySampleClass");
+
+      assert.instanceOf(cmp, MySampleClass);
+      assert.equal(cmp.http, myHttp);
     });
   });
 });

@@ -12,30 +12,46 @@ function getParameterNames(fn) {
     : result;
 }
 
+function requireFacility(name){
+  return require(name);
+}
+
 function createInstance(classFunction, args) {
     var params = [classFunction].concat(args);
 
     var wrapper = classFunction.bind.apply(classFunction, params);
 
     return new wrapper();
-};
+}
+
+function normalizeName(name){
+  return name.toLowerCase().replace(/[\.\-]/, "");
+}
 
 function ShelfDependency(){
   this._components = {};
-
+  this._facilities = [];
 }
 
 ShelfDependency.prototype._getComponents = function(name){
   if (!name){
     throw "Invalid component name.";
   }
-  name = name.toLowerCase();
+  name = normalizeName(name);
   if (name === "shelf"){
     return [{instance: this}];
   }
 
   var cmps = this._components[name];
   if (!cmps){
+
+    for (var i = 0; i < this._facilities.length; i++){
+      var result = this._facilities[i](name);
+      if (result){
+        return [{instance: result}];
+      }
+    }
+
     throw "Dependency '" + name + "' not found";
   }
 
@@ -75,7 +91,7 @@ ShelfDependency.prototype.register = function(name, component, staticDependencie
   if (!name){
     throw "Invalid component name.";
   }
-  name = name.toLowerCase();
+  name = normalizeName(name);
   if (name === "shelf"){
     throw "Cannot register a component called 'shelf'";
   }
@@ -113,4 +129,9 @@ ShelfDependency.prototype.unregister = function(name){
   this._components[name] = null;
 };
 
+ShelfDependency.prototype.use = function(facilityFunction){
+  this._facilities.push(facilityFunction);
+};
+
 module.exports = ShelfDependency;
+module.exports.requireFacility = requireFacility;
