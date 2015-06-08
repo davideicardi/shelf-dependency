@@ -1,11 +1,11 @@
 # shelf-dependency
 
 **shelf-dependency** is a [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) container for Node.js applications.
-It allows dependency injection (see [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection)) inside  Javascript constructor functions.
+It allows dependency injection pattern (see [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection)) inside Javascript constructor functions.
 
 The main goals of **shelf-dependency** are:
-- don't require any special conventions for modules
-- require support
+- just use function parameters to declare dependencies
+- support for standard `require`
 - easy to unit test
 - convention over configuration
 - extensible
@@ -16,7 +16,7 @@ Install shelf-dependency from npm:
 
     npm install shelf-dependency --save
 
-Now imagine that you the following application structure:
+Now imagine that you have the following application structure:
 
 ```
 - index.js
@@ -127,9 +127,15 @@ If your components are declared inside private or public modules you can use the
 shelf.register("car", require("./car.js"));
 ```
 
-The name used when registering a component will be the same used when resolving it. Just remember that names are case insensitive and dots and dashes are removed by default. Also consider that usually component's dependencies are automatically resolved using function parameter names, so I suggest to don't use characters that are not allowed for parameters javascript names.
+The name used when registering a component will be the same used when resolving it. Just remember that names are case insensitive and dots and dashes are removed by default. Also consider that usually component's dependencies are automatically resolved using function parameter names, so I suggest to don't use characters that are not allowed for parameters Javascript names.
 
 You can register multiple components with the same name. In this case when resolving a single component (method `resolve`) the last one win, but you can get all the registered components by a given name using `resolveAll` method.
+
+You can also register objects:
+
+```
+shelf.register("car", { name: "Ferrari" });
+```
 
 ## Resolving a component
 
@@ -152,23 +158,129 @@ If one component cannot be resolved an exception is throw.
 
 ## Registering a component with a static dependency
 
-TODO
+Sometime you need to pass options or other properties to component that aren't
+components. In this case you can explicitly pass a static dependency.
+
+For example let's say that you have a Duck component that takes the name of the
+duck.
+
+```
+function Duck(name){
+  this.name = name;
+}
+```
+
+You can register the Duck component using this code:
+
+```
+shelf.register("duck", Duck, { name: "Donald" } );
+```
+
+Any dependency passed explicitly in this way has the precedence over standard
+components. I usually suggest to use this solution for configuration objects or
+other special dependencies.
+
+## Unregister a component
+
+You can unregister a component by calling:
+
+```
+shelf.unregister("car");
+```
+
+This instruction deletes any reference to the specified component but doesn't
+have any effect on already resolved instances.
 
 ## Resolve a list of components
 
-TODO
+When multiple components are registered with the same name, you can get the list
+of component by calling `resolveAll`:
+
+```
+function Ferrari(){
+}
+function Porsche(){
+}
+shelf.register("car", Ferrari);
+shelf.register("car", Porsche);
+var cars = shelf.resolveAll("car");
+```
+
+`resolveAll` gets an array of all the registered components, in the same order
+of the register calls.
+
+If you have a component that need to receive a list of other components of the
+same kind you can use the `listFacility`. See below.
 
 ## Facilities
 
-TODO
+Facility are used to extend the default behavior of **shelf-dependency**.
+A facility can be registered using the `use` method. The facility function is
+called when a component cannot be resolved using the default mechanism.
+
+Here an example:
+
+```
+function myFacility(shelf, name){
+  // Write your custom facility code
+  // return the resolved component or
+  // null if the facility cannot resolve it.
+}
+
+shelf.use(myFacility);
+```
+
+There are some built-in facilities available:
+- requireFacility
+- listFacility
 
 ## requireFacility
 
-TODO
+`requireFacility` is used to automatically call Node.js require method when
+a component is not found.  
+This can be very useful to easy setup your project without requiring to
+manually register all the components.
+
+```
+function MySampleClass(http){
+  this.http = http;
+}
+
+shelf.use(ShelfDependency.requireFacility);
+shelf.register("MySampleClass", MySampleClass);
+
+var cmp = shelf.resolve("MySampleClass");
+
+assert.instanceOf(cmp, MySampleClass);
+assert.equal(cmp.http, require("http"));
+```
 
 ## listFacility
 
-TODO
+`listFacility` is used to automatically resolve components that end with 'List'
+by calling `resolveAll` method instead of the standard `resolve`. This can
+be useful to get a list of components instead of only one for a given name.
+
+```
+function MyLogger1(){}
+function MyLogger2(){}
+
+function MySampleClass(loggerList){
+  this._loggerList = loggerList;
+}
+
+shelf.use(ShelfDependency.listFacility);
+shelf.register("logger", MyLogger1);
+shelf.register("logger", MyLogger2);
+shelf.register("MySampleClass", MySampleClass);
+
+var cmp = shelf.resolve("MySampleClass");
+
+assert.instanceOf(cmp, MySampleClass);
+assert.equal(cmp._loggerList.length, 2);
+assert.instanceOf(cmp._loggerList[0], MyLogger1);
+assert.instanceOf(cmp._loggerList[1], MyLogger2);
+```
 
 ## License (MIT)
 

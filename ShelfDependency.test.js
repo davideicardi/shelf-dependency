@@ -16,13 +16,13 @@ describe("ShelfDependency.js", function(){
     shelf = null;
   });
 
-  it("cannot resolve unknown component", function(){
+  it("resolve an unknown component throw an exception", function(){
     var fn = function() {shelf.resolve("notExisting");};
 
-    assert.throw(fn);
+    assert.throw(fn, "Cannot resolve component 'notExisting'");
   });
 
-  it("cannot register component with reserved keywords", function(){
+  it("registering a component with a reserved keyworkds throw an exception", function(){
     var fn = function() {shelf.register("shelf", {});};
     assert.throw(fn);
 
@@ -142,26 +142,26 @@ describe("ShelfDependency.js", function(){
   });
 
   describe("registering multiple components with the same name", function(){
-    function MyClass1(){
+    function Ferrari(){
     }
-    function MyClass2(){
+    function Porsche(){
     }
 
     beforeEach(function(){
-      shelf.register("myClass", MyClass1);
-      shelf.register("myClass", MyClass2);
+      shelf.register("car", Ferrari);
+      shelf.register("car", Porsche);
     });
 
     it("last component is returned", function(){
-      var cmp = shelf.resolve("myClass");
-      assert.instanceOf(cmp, MyClass2);
+      var cmp = shelf.resolve("car");
+      assert.instanceOf(cmp, Porsche);
     });
 
     it("all registered components can be resolved", function(){
-      var cmps = shelf.resolveAll("myClass");
+      var cmps = shelf.resolveAll("car");
       assert.equal(cmps.length, 2);
-      assert.instanceOf(cmps[0], MyClass1);
-      assert.instanceOf(cmps[1], MyClass2);
+      assert.instanceOf(cmps[0], Ferrari);
+      assert.instanceOf(cmps[1], Porsche);
     });
   });
 
@@ -264,7 +264,7 @@ describe("ShelfDependency.js", function(){
     });
   });
 
-  describe("standard require can be used to resolve components", function(){
+  describe("resolve components using require (requireFacility)", function(){
 
     function MySampleClass(http){
       this.http = http;
@@ -291,5 +291,38 @@ describe("ShelfDependency.js", function(){
       assert.instanceOf(cmp, MySampleClass);
       assert.equal(cmp.http, myHttp);
     });
+
+    it("resolve an unknown component throw an exception", function(){
+      var fn = function() {shelf.resolve("notExisting");};
+      assert.throw(fn, "Cannot resolve component 'notExisting'");
+    });
   });
+
+
+  describe("resolve a list of components (listFacility)", function(){
+
+    function MyLogger1(){}
+    function MyLogger2(){}
+
+    function MySampleClass(loggerList){
+      this._loggerList = loggerList;
+    }
+
+    beforeEach(function(){
+      shelf.use(ShelfDependency.listFacility);
+      shelf.register("logger", MyLogger1);
+      shelf.register("logger", MyLogger2);
+      shelf.register("MySampleClass", MySampleClass);
+    });
+
+    it("resolving a dependencies with a require module", function(){
+      var cmp = shelf.resolve("MySampleClass");
+
+      assert.instanceOf(cmp, MySampleClass);
+      assert.equal(cmp._loggerList.length, 2);
+      assert.instanceOf(cmp._loggerList[0], MyLogger1);
+      assert.instanceOf(cmp._loggerList[1], MyLogger2);
+    });
+  });
+
 });

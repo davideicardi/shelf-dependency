@@ -1,7 +1,7 @@
 {
   "name": "shelf-dependency",
   "version": "0.1.0",
-  "description": "Poor Man’s Dependency Injection for node.js",
+  "description": "Dependency Injection for node.js",
   "main": "ShelfDependency.js",
   "scripts": {
     "test": "mocha -w *.test.js"
@@ -14,7 +14,7 @@
     "dependency-injection",
     "container"
   ],
-  "author": "Davide Icardi",
+  "author": "davide.icardi@gmail.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/davideicardi/shelf-dependency/issues"

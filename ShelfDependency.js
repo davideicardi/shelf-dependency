@@ -12,8 +12,20 @@ function getParameterNames(fn) {
     : result;
 }
 
-function requireFacility(name){
-  return require(name);
+function requireFacility(shelf, name){
+  try {
+    return require(name);
+  } catch (e) {
+    return null;
+  }
+}
+
+function listFacility(shelf, name){
+  if (name.indexOf("List", name.length - 4) >= 0){
+    return shelf.resolveAll(name.substring(0, name.length - 4));
+  }
+
+  return null;
 }
 
 function createInstance(classFunction, args) {
@@ -37,22 +49,22 @@ ShelfDependency.prototype._getComponents = function(name){
   if (!name){
     throw "Invalid component name.";
   }
-  name = normalizeName(name);
-  if (name === "shelf"){
+  var normalName = normalizeName(name);
+  if (normalName === "shelf"){
     return [{instance: this}];
   }
 
-  var cmps = this._components[name];
+  var cmps = this._components[normalName];
   if (!cmps){
 
     for (var i = 0; i < this._facilities.length; i++){
-      var result = this._facilities[i](name);
+      var result = this._facilities[i](this, name);
       if (result){
         return [{instance: result}];
       }
     }
 
-    throw "Dependency '" + name + "' not found";
+    throw "Cannot resolve component '" + name + "'";
   }
 
   return cmps;
@@ -135,3 +147,4 @@ ShelfDependency.prototype.use = function(facilityFunction){
 
 module.exports = ShelfDependency;
 module.exports.requireFacility = requireFacility;
+module.exports.listFacility = listFacility;
