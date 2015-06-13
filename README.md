@@ -73,7 +73,7 @@ var foo = shelf.resolve("foo");
 foo.helloFoo();
 ```
 
-Basically we create the **SHelfDependency** container and register all the components (**Bar**, **Foo** and an object for the **logger**). 
+Basically we create the **ShelfDependency** container and register all the components (**Bar**, **Foo** and an object for the **logger**). 
 Finally we resolve our root class **Foo**.
 
 That's it!
