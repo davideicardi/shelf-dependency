@@ -3,12 +3,12 @@
 **shelf-dependency** is a [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) container for Node.js applications.
 It allows dependency injection pattern (see [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection)) inside Javascript constructor functions.
 
-The main goals of **shelf-dependency** are:
-- just use function parameters to declare dependencies
+Main goals of **shelf-dependency** are:
+- easy and unobstrusive dependencies declaration
 - support for standard `require`
-- easy to unit test
+- easy unit testing for components
 - convention over configuration
-- extensible
+- extensibility
 
 ## Usage
 
@@ -24,12 +24,12 @@ Now imagine that you have the following application structure:
 - bar.js
 ```
 
-index.js is the main entry point of our application. foo.js is a component (sometime called service) that we want to instantiate inside the main. foo has a dependency to bar and to a logger.  
-bar is another component and has a dependency to a logger.
+**index** is the main entry point of your application. **Foo** is a component (a class) that we want to instantiate inside **index**. **Foo** has a dependency to **bar** and to a **logger**.  
+**Bar** is another component and has a dependency to a logger.
 
-A component is a standard node.js module (can be a private module or a public module) that exports a Javascript style class constructor. Here for example the bar.js file that export the Bar class:
+A component is a standard node.js module (can be a private module or a public module) that exports a Javascript style class constructor. Here for example **bar.js** file that export **Bar** class:
 
-bar.js
+**bar.js**
 ```
 function Bar(logger){
   this._logger = logger;
@@ -40,11 +40,11 @@ Bar.prototype.helloBar = function(){
 module.exports = Bar;
 ```
 
-As you can see there isn't any special code or annotation. All you have to do is to export a function that will be called automatically with all the dependencies resolved, in the above case the logger instance.
+As you can see there isn't any special code or annotation. All you have to do is to export a function that will be called automatically with all the dependencies resolved, in the above case the **logger** instance.
 
-The foo component is very similar except that it has a dependency to logger and bar:
+**Foo** component is very similar except that it has a dependency to logger and bar:
 
-foo.js
+**foo.js**
 ```
 function Foo(bar, logger){
   this._logger = logger;
@@ -57,11 +57,10 @@ Foo.prototype.helloFoo = function(){
 module.exports = Foo;
 ```
 
-When foo will be created an instance of class Bar will be passed.
+When **Foo** will be created an instance of class **Bar** will be passed.
+And now take a look at our application entry point, **index.js**, where we wire up all the components together:
 
-And now take a look at our application entry point, index.js, where we wire up all the components together:
-
-index.js
+**index.js**
 ```
 var ShelfDependency = require("shelf-dependency");
 var shelf = new ShelfDependency();
@@ -74,16 +73,12 @@ var foo = shelf.resolve("foo");
 foo.helloFoo();
 ```
 
-Here some explanations:
-- `var ShelfDependency = require("shelf-dependency");` declare the ShelfDependency class.
-- `var shelf = new ShelfDependency();` instantiate the container.
-- `shelf.register("foo", require("./foo.js"));` register the foo component.
-- `shelf.register("bar", require("./bar.js"));` register the bar component.
-- `shelf.register("logger", console);` register the logger component. In this case we simply pass an object, not a constructor function.
-- `var foo = shelf.resolve("foo");` create our sample component
-- `foo.helloFoo();` call a sample method
+Basically we create the **SHelfDependency** container and register all the components (**Bar**, **Foo** and an object for the **logger**). 
+Finally we resolve our root class **Foo**.
 
 That's it!
+
+For more info, advanced usage and features read on.
 
 ## Components
 
