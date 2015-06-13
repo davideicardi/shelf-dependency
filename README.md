@@ -1,6 +1,6 @@
-[![npm version](https://badge.fury.io/js/shelf-dependency.svg)](http://badge.fury.io/js/shelf-dependency)
-
 # shelf-dependency
+
+[![npm version](https://badge.fury.io/js/shelf-dependency.svg)](http://badge.fury.io/js/shelf-dependency)
 
 **shelf-dependency** is a [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) container for Node.js applications.
 It allows dependency injection pattern (see [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection)) inside Javascript constructor functions.
