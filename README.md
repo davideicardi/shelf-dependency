@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/shelf-dependency.svg)](http://badge.fury.io/js/shelf-dependency)
+
 # shelf-dependency
 
 **shelf-dependency** is a [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) container for Node.js applications.
