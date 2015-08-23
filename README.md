@@ -279,6 +279,10 @@ assert.instanceOf(cmp._loggerList[0], MyLogger1);
 assert.instanceOf(cmp._loggerList[1], MyLogger2);
 ```
 
+## Other DI modules
+
+http://www.mariocasciaro.me/dependency-injection-in-node-js-and-other-architectural-patterns
+
 ## License (MIT)
 
 Copyright (c) 2015 Davide Icardi
