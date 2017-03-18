@@ -2,31 +2,31 @@
 
 var assert = require("chai").assert;
 
-describe("ShelfDependency.js", function(){
+describe("ShelfDependency", function(){
 
   var ShelfDependency;
-  var shelf;
+  var container;
 
   beforeEach(function(){
-    ShelfDependency = require("./ShelfDependency.js");
-    shelf = new ShelfDependency();
+    ShelfDependency = require("./../index.js");
+    container = new ShelfDependency.Container();
   });
 
   afterEach(function(){
-    shelf = null;
+    container = null;
   });
 
   it("resolve an unknown component throw an exception", function(){
-    var fn = function() {shelf.resolve("notExisting");};
+    var fn = function() {container.resolve("notExisting");};
 
     assert.throw(fn, "Cannot resolve component 'notExisting'");
   });
 
   it("registering a component with a reserved keyworkds throw an exception", function(){
-    var fn = function() {shelf.register("shelf", {});};
+    var fn = function() {container.register("container", {});};
     assert.throw(fn);
 
-    var fn = function() {shelf.register("SHELF", {});};
+    var fn = function() {container.register("CONTAINER", {});};
     assert.throw(fn);
   });
 
@@ -36,20 +36,36 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.register("myClass1", MyClass1);
+      container.register("myClass1", MyClass1);
     });
 
     it("can be resolved and constructor is invoked", function(){
-      var cmp = shelf.resolve("myClass1");
+      var cmp = container.resolve("myClass1");
 
       assert.instanceOf(cmp, MyClass1);
     });
 
     it("singleton: multiple resolve return the same instance", function(){
-      var cmp1 = shelf.resolve("myClass1");
-      var cmp2 = shelf.resolve("myClass1");
+      var cmp1 = container.resolve("myClass1");
+      var cmp2 = container.resolve("myClass1");
 
       assert.equal(cmp1, cmp2);
+    });
+  });
+
+  describe("registering a component using a class declaration", function(){
+
+    class MyEs6Class1 {
+    }
+
+    beforeEach(function(){
+      container.register("myEs6Class1", MyEs6Class1);
+    });
+
+    it("can be resolved and constructor is invoked", function(){
+      var cmp = container.resolve("myEs6Class1");
+
+      assert.instanceOf(cmp, MyEs6Class1);
     });
   });
 
@@ -60,30 +76,30 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.register("Socket.IO", SocketIO);
-      shelf.register("sql-server", SqlServer);
+      container.register("Socket.IO", SocketIO);
+      container.register("sql-server", SqlServer);
     });
 
     it("component name can contains dots", function(){
-      var cmp = shelf.resolve("socket.IO");
+      var cmp = container.resolve("socket.IO");
 
       assert.instanceOf(cmp, SocketIO);
     });
 
     it("component can be resolved without dots", function(){
-      var cmp = shelf.resolve("socketIO");
+      var cmp = container.resolve("socketIO");
 
       assert.instanceOf(cmp, SocketIO);
     });
 
     it("component name can contains dashes", function(){
-      var cmp = shelf.resolve("sql-server");
+      var cmp = container.resolve("sql-server");
 
       assert.instanceOf(cmp, SqlServer);
     });
 
     it("component can be resolved without dashes", function(){
-      var cmp = shelf.resolve("sqlserver");
+      var cmp = container.resolve("sqlserver");
 
       assert.instanceOf(cmp, SqlServer);
     });
@@ -95,13 +111,13 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.register("myClass1", MyClass1);
+      container.register("myClass1", MyClass1);
     });
 
     it("can be resolved using any case combination", function(){
-      var c1 = shelf.resolve("myClass1");
-      var c2 = shelf.resolve("myclass1");
-      var c3 = shelf.resolve("MYCLASS1");
+      var c1 = container.resolve("myClass1");
+      var c2 = container.resolve("myclass1");
+      var c3 = container.resolve("MYCLASS1");
       assert.instanceOf(c1, MyClass1);
       assert.instanceOf(c2, MyClass1);
       assert.instanceOf(c3, MyClass1);
@@ -110,9 +126,9 @@ describe("ShelfDependency.js", function(){
     });
 
     it("can be resolved using resolveAll with any case combination", function(){
-      var c1 = shelf.resolveAll("myClass1")[0];
-      var c2 = shelf.resolveAll("myclass1")[0];
-      var c3 = shelf.resolveAll("MYCLASS1")[0];
+      var c1 = container.resolveAll("myClass1")[0];
+      var c2 = container.resolveAll("myclass1")[0];
+      var c3 = container.resolveAll("MYCLASS1")[0];
       assert.instanceOf(c1, MyClass1);
       assert.instanceOf(c2, MyClass1);
       assert.instanceOf(c3, MyClass1);
@@ -121,9 +137,9 @@ describe("ShelfDependency.js", function(){
     });
 
     it("can be unregistere using any case combination", function(){
-      shelf.unregister("MYCLASS1");
+      container.unregister("MYCLASS1");
 
-      var fn = function() {shelf.resolve("myClass1");};
+      var fn = function() {container.resolve("myClass1");};
       assert.throw(fn);
     });
 
@@ -133,9 +149,9 @@ describe("ShelfDependency.js", function(){
       var MyClass2 = function(MYCLASS1){
         this.MYCLASS1 = MYCLASS1;
       }
-      shelf.register("myClass2", MyClass2);
+      container.register("myClass2", MyClass2);
 
-      var c = shelf.resolve("myClass2");
+      var c = container.resolve("myClass2");
       assert.instanceOf(c, MyClass2);
       assert.instanceOf(c.MYCLASS1, MyClass1);
     });
@@ -148,17 +164,17 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.register("car", Ferrari);
-      shelf.register("car", Porsche);
+      container.register("car", Ferrari);
+      container.register("car", Porsche);
     });
 
     it("last component is returned", function(){
-      var cmp = shelf.resolve("car");
+      var cmp = container.resolve("car");
       assert.instanceOf(cmp, Porsche);
     });
 
     it("all registered components can be resolved", function(){
-      var cmps = shelf.resolveAll("car");
+      var cmps = container.resolveAll("car");
       assert.equal(cmps.length, 2);
       assert.instanceOf(cmps[0], Ferrari);
       assert.instanceOf(cmps[1], Porsche);
@@ -170,18 +186,18 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.register("myClass1", MyClass1);
+      container.register("myClass1", MyClass1);
     });
 
     it("can be unregistered", function(){
       // check if is registered
-      var cmp = shelf.resolve("myClass1");
+      var cmp = container.resolve("myClass1");
       assert.instanceOf(cmp, MyClass1);
 
       // now unregister it
-      shelf.unregister("myClass1");
+      container.unregister("myClass1");
 
-      var fn = function() {shelf.resolve("myClass1");};
+      var fn = function() {container.resolve("myClass1");};
       assert.throw(fn);
     });
   });
@@ -191,11 +207,11 @@ describe("ShelfDependency.js", function(){
     var myInstance1 = {};
 
     beforeEach(function(){
-      shelf.register("myClass1", myInstance1);
+      container.register("myClass1", myInstance1);
     });
 
     it("can be resolved with the specified instance", function(){
-      var cmp = shelf.resolve("myClass1");
+      var cmp = container.resolve("myClass1");
 
       assert.equal(cmp, myInstance1);
     });
@@ -215,34 +231,34 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.register("car", Car);
-      shelf.register("steeringWheel", SteeringWheel);
-      shelf.register("engine", Engine);
+      container.register("car", Car);
+      container.register("steeringWheel", SteeringWheel);
+      container.register("engine", Engine);
     });
 
     it("can be resolved", function(){
-      var cmp = shelf.resolve("car");
+      var cmp = container.resolve("car");
 
       assert.instanceOf(cmp, Car);
       assert.instanceOf(cmp.engine, Engine);
     });
   });
 
-  describe("register a component having a dependency to shelf-dependency itself", function(){
-    function MyFactory1(shelf){
-      this.shelf = shelf;
+  describe("register a component having a dependency to container-dependency itself", function(){
+    function MyFactory1(container){
+      this.container = container;
     }
 
     beforeEach(function(){
-      shelf.register("MyFactory1", MyFactory1);
+      container.register("MyFactory1", MyFactory1);
     });
 
     it("can be resolved", function(){
-      var cmp = shelf.resolve("MyFactory1");
+      var cmp = container.resolve("MyFactory1");
 
       assert.instanceOf(cmp, MyFactory1);
-      assert.instanceOf(cmp.shelf, ShelfDependency);
-      assert.equal(cmp.shelf, shelf);
+      assert.instanceOf(cmp.container, ShelfDependency.Container);
+      assert.equal(cmp.container, container);
     });
   });
 
@@ -253,11 +269,11 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.register("duck", Duck, { name: "Donald" } );
+      container.register("duck", Duck, { name: "Donald" } );
     });
 
     it("can be resolved with the static dependency", function(){
-      var cmp = shelf.resolve("duck");
+      var cmp = container.resolve("duck");
 
       assert.instanceOf(cmp, Duck);
       assert.equal(cmp.name, "Donald");
@@ -271,12 +287,12 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.use(ShelfDependency.requireFacility);
-      shelf.register("MySampleClass", MySampleClass);
+      container.use(ShelfDependency.requireFacility);
+      container.register("MySampleClass", MySampleClass);
     });
 
     it("resolving a dependencies with a require module", function(){
-      var cmp = shelf.resolve("MySampleClass");
+      var cmp = container.resolve("MySampleClass");
 
       assert.instanceOf(cmp, MySampleClass);
       assert.equal(cmp.http, require("http"));
@@ -284,16 +300,16 @@ describe("ShelfDependency.js", function(){
 
     it("an explicitly registered component wins over a require", function(){
       var myHttp = {};
-      shelf.register("http", myHttp)
+      container.register("http", myHttp)
 
-      var cmp = shelf.resolve("MySampleClass");
+      var cmp = container.resolve("MySampleClass");
 
       assert.instanceOf(cmp, MySampleClass);
       assert.equal(cmp.http, myHttp);
     });
 
     it("resolve an unknown component throw an exception", function(){
-      var fn = function() {shelf.resolve("notExisting");};
+      var fn = function() {container.resolve("notExisting");};
       assert.throw(fn, "Cannot resolve component 'notExisting'");
     });
   });
@@ -309,14 +325,14 @@ describe("ShelfDependency.js", function(){
     }
 
     beforeEach(function(){
-      shelf.use(ShelfDependency.listFacility);
-      shelf.register("logger", MyLogger1);
-      shelf.register("logger", MyLogger2);
-      shelf.register("MySampleClass", MySampleClass);
+      container.use(ShelfDependency.listFacility);
+      container.register("logger", MyLogger1);
+      container.register("logger", MyLogger2);
+      container.register("MySampleClass", MySampleClass);
     });
 
     it("resolving a dependencies with a require module", function(){
-      var cmp = shelf.resolve("MySampleClass");
+      var cmp = container.resolve("MySampleClass");
 
       assert.instanceOf(cmp, MySampleClass);
       assert.equal(cmp._loggerList.length, 2);

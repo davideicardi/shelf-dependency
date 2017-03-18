@@ -65,17 +65,17 @@ And now take a look at our application entry point, **index.js**, where we wire 
 **index.js**
 ```
 var ShelfDependency = require("shelf-dependency");
-var shelf = new ShelfDependency();
+var container = new ShelfDependency.Container();
 
-shelf.register("foo", require("./foo.js"));
-shelf.register("bar", require("./bar.js"));
-shelf.register("logger", console);
+container.register("foo", require("./foo.js"));
+container.register("bar", require("./bar.js"));
+container.register("logger", console);
 
-var foo = shelf.resolve("foo");
+var foo = container.resolve("foo");
 foo.helloFoo();
 ```
 
-Basically we create the **ShelfDependency** container and register all the components (**Bar**, **Foo** and an object for the **logger**). 
+Basically we create the **ShelfDependency.Container** and register all the components (**Bar**, **Foo** and an object for the **logger**). 
 Finally we resolve our root class **Foo**.
 
 That's it!
@@ -111,17 +111,17 @@ Component can also be static javascript object instance, the difference is that 
 
 ## Registering a component
 
-A component can be registered by calling `ShelfDependency.register` instance method.
+A component can be registered by calling `Container.register` instance method.
 
 ```
-var shelf = new ShelfDependency();
-shelf.register("car", Car);
+var container = new ShelfDependency().Container;
+container.register("car", Car);
 ```
 
 If your components are declared inside private or public modules you can use the standard node.js require function:
 
 ```
-shelf.register("car", require("./car.js"));
+container.register("car", require("./car.js"));
 ```
 
 The name used when registering a component will be the same used when resolving it. Just remember that names are case insensitive and dots and dashes are removed by default. Also consider that usually component's dependencies are automatically resolved using function parameter names, so I suggest to don't use characters that are not allowed for parameters Javascript names.
@@ -131,18 +131,18 @@ You can register multiple components with the same name. In this case when resol
 You can also register objects:
 
 ```
-shelf.register("car", { name: "Ferrari" });
+container.register("car", { name: "Ferrari" });
 ```
 
 ## Resolving a component
 
-You can resolve a component by calling `ShelfDependency.resolve` instance method explicitly or implicitly when declaring a constructor parameter (dependency).
+You can resolve a component by calling `Container.resolve` instance method explicitly or implicitly when declaring a constructor parameter (dependency).
 Usually the `resolve` method is only called inside the application entry point, where you need to create the roots components.
 Then each root component will have zero or more dependencies to other components that will call the resolve method automatically when instantiated.
 
 Here we resolve the Car component explicitly:
 ```
-var car = shelf.resolve("car");
+var car = container.resolve("car");
 ```
 
 When calling resolve method for classes the function constructor is called, so the above code is equivalent to:
@@ -170,7 +170,7 @@ function Duck(name){
 You can register the Duck component using this code:
 
 ```
-shelf.register("duck", Duck, { name: "Donald" } );
+container.register("duck", Duck, { name: "Donald" } );
 ```
 
 Any dependency passed explicitly in this way has the precedence over standard
@@ -182,7 +182,7 @@ other special dependencies.
 You can unregister a component by calling:
 
 ```
-shelf.unregister("car");
+container.unregister("car");
 ```
 
 This instruction deletes any reference to the specified component but doesn't
@@ -198,9 +198,9 @@ function Ferrari(){
 }
 function Porsche(){
 }
-shelf.register("car", Ferrari);
-shelf.register("car", Porsche);
-var cars = shelf.resolveAll("car");
+container.register("car", Ferrari);
+container.register("car", Porsche);
+var cars = container.resolveAll("car");
 ```
 
 `resolveAll` gets an array of all the registered components, in the same order
@@ -224,7 +224,7 @@ function myFacility(shelf, name){
   // null if the facility cannot resolve it.
 }
 
-shelf.use(myFacility);
+container.use(myFacility);
 ```
 
 There are some built-in facilities available:
@@ -243,10 +243,10 @@ function MySampleClass(http){
   this.http = http;
 }
 
-shelf.use(ShelfDependency.requireFacility);
-shelf.register("MySampleClass", MySampleClass);
+container.use(ShelfDependency.requireFacility);
+container.register("MySampleClass", MySampleClass);
 
-var cmp = shelf.resolve("MySampleClass");
+var cmp = container.resolve("MySampleClass");
 
 assert.instanceOf(cmp, MySampleClass);
 assert.equal(cmp.http, require("http"));
@@ -266,12 +266,12 @@ function MySampleClass(loggerList){
   this._loggerList = loggerList;
 }
 
-shelf.use(ShelfDependency.listFacility);
-shelf.register("logger", MyLogger1);
-shelf.register("logger", MyLogger2);
-shelf.register("MySampleClass", MySampleClass);
+container.use(ShelfDependency.listFacility);
+container.register("logger", MyLogger1);
+container.register("logger", MyLogger2);
+container.register("MySampleClass", MySampleClass);
 
-var cmp = shelf.resolve("MySampleClass");
+var cmp = container.resolve("MySampleClass");
 
 assert.instanceOf(cmp, MySampleClass);
 assert.equal(cmp._loggerList.length, 2);
@@ -285,7 +285,7 @@ http://www.mariocasciaro.me/dependency-injection-in-node-js-and-other-architectu
 
 ## License (MIT)
 
-Copyright (c) 2015 Davide Icardi
+Copyright (c) 2017 Davide Icardi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

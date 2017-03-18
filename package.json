@@ -2,15 +2,18 @@
   "name": "shelf-dependency",
   "version": "0.1.0",
   "description": "Dependency Injection for node.js",
-  "main": "ShelfDependency.js",
+  "main": "index.js",
+  "typings": "index.d.ts",
   "scripts": {
-    "test": "mocha -w *.test.js"
+    "develop": "tsc -w",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/davideicardi/shelf-dependency.git"
   },
   "keywords": [
+    "inversion-of-controler",
     "dependency-injection",
     "container"
   ],
@@ -21,6 +24,11 @@
   },
   "homepage": "https://github.com/davideicardi/shelf-dependency",
   "devDependencies": {
-    "chai": "^3.0.0"
+    "@types/chai": "^3.4.34",
+    "@types/node": "^7.0.8",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "tslint": "^4.3.1",
+    "typescript": "^2.2.1"
   }
 }
