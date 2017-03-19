@@ -1,15 +1,35 @@
-// My poor man DI
+import * as Debug from "debug";
+const debug = Debug("shelf");
 
 // https://github.com/goatslacker/get-parameter-names
-function getParameterNames(fn: Function) {
+export function getDependencies(fn: Function): string[] {
 	const COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-	const code = fn.toString().replace(COMMENTS, "");
-	const result = code.slice(code.indexOf("(") + 1, code.indexOf(")"))
+	const code = Function.prototype.toString.call(fn)
+		.replace(COMMENTS, "");
+
+	let parameters: string;
+	if (isEs6Class(code)) {
+		const constructorStart = "constructor(";
+		const constructorPosition = code.indexOf(constructorStart);
+		if (constructorPosition >= 0) {
+			parameters = code.slice(constructorPosition + constructorStart.length, code.indexOf(")"));
+		} else {
+			parameters = "";
+		}
+	} else {
+		parameters = code.slice(code.indexOf("(") + 1, code.indexOf(")"));
+	}
+
+	const result = parameters
 		.match(/([^\s,]+)/g);
 
 	return result === null
 		? []
 		: result;
+}
+
+function isEs6Class(funcToString: string) {
+	return /^class\s/.test(funcToString);
 }
 
 const CONTAINER_DEPENDENCY_NAME = "container";
@@ -23,8 +43,19 @@ export function requireFacility(shelf: Container, name: string) {
 }
 
 export function listFacility(shelf: Container, name: string) {
-	if (name.indexOf("List", name.length - 4) >= 0) {
+	if (name.endsWith("List")) {
 		return shelf.resolveAll(name.substring(0, name.length - 4));
+	}
+
+	return null;
+}
+
+export function factoryFacility(shelf: Container, name: string) {
+	if (name.endsWith("Factory")) {
+		const cmpToResolve = name.substring(0, name.length - 7);
+		return (dependencies?: any) => {
+			return shelf.resolveNew(cmpToResolve, dependencies);
+		};
 	}
 
 	return null;
@@ -58,13 +89,19 @@ export class Container {
 	resolveAll(name: string) {
 		const cmps = this.getComponents(name);
 
-		return cmps.map(this.resolveComponent);
+		return cmps.map((c) => this.resolveComponent(c));
 	}
 
 	resolve(name: string) {
 		const cmps = this.getComponents(name);
 
 		return this.resolveComponent(cmps[cmps.length - 1]);
+	}
+
+	resolveNew(name: string, dependencies?: any) {
+		const cmps = this.getComponents(name);
+
+		return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
 	}
 
 	register(name: string, component: any, staticDependencies?: any) {
@@ -78,10 +115,10 @@ export class Container {
 		}
 
 		let registeredCmp: Component;
-		if (typeof component === "function") {
+		if (typeof component === "function") { // function or es6 class
 			registeredCmp = {
 					componentClass: component,
-					parameterNames: getParameterNames(component)
+					parameterNames: getDependencies(component)
 				};
 		}	else if (typeof component === "object") {
 			registeredCmp = {
@@ -106,6 +143,8 @@ export class Container {
 			cps = new Array<Component>();
 			this.components.set(name, cps);
 		}
+
+		debug(`Registering ${name} with ${registeredCmp.parameterNames}...`);
 
 		cps.push(registeredCmp);
 	}
@@ -149,26 +188,44 @@ export class Container {
 
 	private resolveComponent(cmp: Component) {
 		if (!cmp.instance) {
-			if (!cmp.parameterNames) {
-				throw new Error("Invalid component");
-			}
-
-			const dependencies = cmp.parameterNames
-				.map((name) => {
-					if (cmp.staticDependencies && cmp.staticDependencies.has(name)) {
-						return cmp.staticDependencies.get(name);
-					}
-
-					return this.resolve(name);
-				});
-
-			if (!cmp.componentClass) {
-				throw new Error("Invalid component");
-			}
-
-			cmp.instance = createInstance(cmp.componentClass, dependencies);
+			cmp.instance = this.resolveNewComponent(cmp);
 		}
 
 		return cmp.instance;
+	}
+
+	private resolveNewComponent(cmp: Component, customDependencies?: any) {
+		if (!cmp.parameterNames) {
+			throw new Error("Invalid component");
+		}
+
+		const customDependenciesMap = new Map<string, any>();
+		if (customDependencies) {
+			for (const key in customDependencies) {
+				if (customDependencies.hasOwnProperty(key)) {
+					const value = customDependencies[key];
+					customDependenciesMap.set(key.toLowerCase(), String(value));
+				}
+			}
+		}
+
+		const dependencies = cmp.parameterNames
+			.map((name) => {
+				if (customDependenciesMap.has(name)) {
+					return customDependenciesMap.get(name);
+				}
+
+				if (cmp.staticDependencies && cmp.staticDependencies.has(name)) {
+					return cmp.staticDependencies.get(name);
+				}
+
+				return this.resolve(name);
+			});
+
+		if (!cmp.componentClass) {
+			throw new Error("Invalid component");
+		}
+
+		return createInstance(cmp.componentClass, dependencies);
 	}
 }

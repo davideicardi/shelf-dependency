@@ -4,8 +4,8 @@ import {Foo} from "./foo";
 
 const container = new ShelfDependency.Container();
 
-container.register("foo", Bar);
-container.register("bar", Foo);
+container.register("foo", Foo);
+container.register("bar", Bar);
 container.register("logger", console);
 
 const foo = container.resolve("foo");

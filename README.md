@@ -2,23 +2,99 @@
 
 [![npm version](https://badge.fury.io/js/shelf-dependency.svg)](http://badge.fury.io/js/shelf-dependency)
 
-**shelf-dependency** is a [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) container for Node.js applications.
-It allows dependency injection pattern (see [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection)) inside Javascript constructor functions.
+**shelf-dependency** is an [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection) container for Node.js applications.
+It allows dependency injection pattern and [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) inside Javascript clases (or constructor functions).
 
 Main goals of **shelf-dependency** are:
 - easy and unobstrusive dependencies declaration
+- es6 class or constructor function (legacy class declaration)
+- typescript support
 - support for standard `require`
 - easy unit testing for components
 - convention over configuration
-- extensibility
+- no decorators or special requirements
+- resolve a list of components
+- resolve factory methods
 
-## Usage
+## Installation
 
 Install shelf-dependency from npm:
 
     npm install shelf-dependency --save
 
-Now imagine that you have the following application structure:
+## Usage (typescript)
+
+You have the following application structure:
+
+```
+- index.ts
+- foo.ts
+- bar.ts
+```
+
+**index** is the main entry point of your application. **Foo** is a component (a class) that we want to instantiate inside **index**. **Foo** has a dependency to **bar** and to a **logger**.  
+**Bar** is another component and has a dependency to a logger.
+
+A component can be any Typescript class. Here for example **bar.ts** file that export **Bar** class:
+
+**bar.ts**
+```
+export class Bar {
+	constructor(readonly logger: Console) {
+	}
+
+	helloBar() {
+		this.logger.log("hello from bar");
+	}
+}
+```
+
+As you can see there isn't any special code or annotation. All you have to do is to export a class that will be called automatically with all the dependencies resolved, in the above case the **logger** instance.
+
+**Foo** component is very similar except that it has a dependency to logger and bar:
+
+**foo.ts**
+```
+import {Bar} from "./bar";
+
+export class Foo {
+	constructor(readonly bar: Bar, readonly logger: Console) {
+	}
+
+	helloFoo() {
+		this.logger.log("hello from foo");
+		this.bar.helloBar();
+	}
+}
+```
+
+When **Foo** will be created an instance of class **Bar** will be passed.
+And now take a look at our application entry point, **index.ts**, where we wire up all the components together:
+
+**index.ts**
+```
+import * as ShelfDependency from "shelf-dependency"
+import {Bar} from "./bar";
+import {Foo} from "./foo";
+
+const container = new ShelfDependency.Container();
+
+container.register("foo", Foo);
+container.register("bar", Bar);
+container.register("logger", console);
+
+const foo = container.resolve("foo");
+foo.helloFoo();
+```
+
+Basically we create the **ShelfDependency.Container** and register all the components (**Bar**, **Foo** and an object for the **logger**). 
+Finally we resolve our root class **Foo**.
+
+That's it!
+
+## Usage (javascript)
+
+You have the following application structure:
 
 ```
 - index.js
@@ -29,7 +105,7 @@ Now imagine that you have the following application structure:
 **index** is the main entry point of your application. **Foo** is a component (a class) that we want to instantiate inside **index**. **Foo** has a dependency to **bar** and to a **logger**.  
 **Bar** is another component and has a dependency to a logger.
 
-A component is a standard node.js module (can be a private module or a public module) that exports a Javascript style class constructor. Here for example **bar.js** file that export **Bar** class:
+A component is a standard node.js function (typically a class constructor). Here for example **bar.js** file that export **Bar** class:
 
 **bar.js**
 ```
@@ -80,18 +156,31 @@ Finally we resolve our root class **Foo**.
 
 That's it!
 
-For more info, advanced usage and features read on.
-
 ## Components
 
-A component can be a class or an already instantiated object.  
-If you don't know how to create a Javascript class take a look at [Mixu's Node book](http://book.mixu.net/node/ch6.html) for a quick introduction.  
-Components are considered always [singleton](http://en.wikipedia.org/wiki/Singleton_pattern), only one instance of a component will be created and every dependency on that component will receive the same instance.  
+A component can be a class or an already instantiated object. Typescript or ES6 classes are supported:
+
+Before ecmascript 6 classes should be created using the legacy function constructor syntax. If you don't know how to create a Javascript class take a look at [Mixu's Node book](http://book.mixu.net/node/ch6.html) for a quick introduction.  
+Components are considered always [singleton](http://en.wikipedia.org/wiki/Singleton_pattern), only one instance of a component will be created and every dependency on that component will receive the same instance. For transient components or to create more than one instance of a component see `factoryFacility` below. 
+
 Components names are case insensitive ('car' is equal to 'CAR') and every dots and dashes are removed ('socket.io' is resolved as 'socketio').
 
 For class component you don't never have to instantiate directly the class (ie. calling 'new' on the constructor function). **shelf-dependency** will take care of creating it. This will allow to resolve all the constructor parameters with other registered components.
 
-Here a sample Car component:
+Here a sample Car component using Typescript:
+
+```
+export class Car {
+  constructor(readonly engine, readonly logger) {
+  }
+  go() {
+    this.engine.start();
+    this.logger.log("car is started!");
+  }
+}
+```
+
+Here a sample Car component using plain ES5 Javascript:
 
 ```
 function Car(engine, logger){
@@ -107,7 +196,7 @@ module.exports = Car;
 
 In the above case **shelf-dependency** when instantiating Car class will pass on the constructor an instance of the engine and logger components. engine and logger parameters are called dependencies.
 
-Component can also be static javascript object instance, the difference is that in this case is your responsability to create the object.
+Component can also be object instance, the difference is that in this case is your responsability to create the object.
 
 ## Registering a component
 
@@ -277,6 +366,33 @@ assert.instanceOf(cmp, MySampleClass);
 assert.equal(cmp._loggerList.length, 2);
 assert.instanceOf(cmp._loggerList[0], MyLogger1);
 assert.instanceOf(cmp._loggerList[1], MyLogger2);
+```
+
+## factoryFacility
+
+`factoryFacility` is used to create factory function that can be used to create 
+new instances of a specific component. The factory dependency must end with 'Factory'.
+The factory method takes an optional object with additional dependencies.
+ This can be useful to create multiple instance of a given component.
+
+```
+function MyLogger(source){
+  this.source = source;
+}
+
+function MySampleClass(loggerFactory){
+  this._logger = loggerFactory({source: "mySource"});
+}
+
+container.use(ShelfDependency.factoryFacility);
+container.register("logger", MyLogger);
+container.register("MySampleClass", MySampleClass);
+
+var cmp = container.resolve("MySampleClass");
+
+assert.instanceOf(cmp, MySampleClass);
+assert.instanceOf(cmp._logger, MyLogger);
+assert.equal(cmp._logger.source, "mySource");
 ```
 
 ## Other DI modules

@@ -2,7 +2,7 @@
 
 var assert = require("chai").assert;
 
-describe("ShelfDependency", function(){
+describe("Container", function(){
 
   var ShelfDependency;
   var container;
@@ -30,7 +30,7 @@ describe("ShelfDependency", function(){
     assert.throw(fn);
   });
 
-  describe("registering a component using a constructor", function(){
+  describe("registering a component using a function constructor", function(){
 
     function MyClass1(){
     }
@@ -56,6 +56,8 @@ describe("ShelfDependency", function(){
   describe("registering a component using a class declaration", function(){
 
     class MyEs6Class1 {
+      constructor(){
+      }
     }
 
     beforeEach(function(){
@@ -66,6 +68,29 @@ describe("ShelfDependency", function(){
       var cmp = container.resolve("myEs6Class1");
 
       assert.instanceOf(cmp, MyEs6Class1);
+    });
+  });
+
+  describe("registering a component using a class declaration with dependencies", function(){
+    class MyEs6Class1 {
+      constructor(a, b){
+        this.a = a;
+        this.b = b;
+      }
+    }
+
+    beforeEach(function(){
+      container.register("myEs6Class1", MyEs6Class1);
+      container.register("a", {v:"a"});
+      container.register("b", {v:"b"});
+    });
+
+    it("can be resolved and constructor is invoked", function(){
+      var cmp = container.resolve("myEs6Class1");
+
+      assert.instanceOf(cmp, MyEs6Class1);
+      assert.equal(cmp.a.v, "a");
+      assert.equal(cmp.b.v, "b");
     });
   });
 
@@ -291,7 +316,7 @@ describe("ShelfDependency", function(){
       container.register("MySampleClass", MySampleClass);
     });
 
-    it("resolving a dependencies with a require module", function(){
+    it("resolving", function(){
       var cmp = container.resolve("MySampleClass");
 
       assert.instanceOf(cmp, MySampleClass);
@@ -331,13 +356,65 @@ describe("ShelfDependency", function(){
       container.register("MySampleClass", MySampleClass);
     });
 
-    it("resolving a dependencies with a require module", function(){
+    it("resolving", function(){
       var cmp = container.resolve("MySampleClass");
 
       assert.instanceOf(cmp, MySampleClass);
       assert.equal(cmp._loggerList.length, 2);
       assert.instanceOf(cmp._loggerList[0], MyLogger1);
       assert.instanceOf(cmp._loggerList[1], MyLogger2);
+    });
+  });
+
+  describe("resolve a factory function (factoryFacility)", function(){
+
+    beforeEach(function(){
+      container.use(ShelfDependency.factoryFacility);
+    });
+
+    function MyLogger(){}
+
+    function MySampleClass(loggerFactory){
+      this.logger1 = loggerFactory();
+      this.logger2 = loggerFactory();
+    }
+
+    it("resolving the factory", function(){
+      container.register("logger", MyLogger);
+      container.register("MySampleClass", MySampleClass);
+
+      var cmp = container.resolve("mySampleClass");
+
+      assert.instanceOf(cmp, MySampleClass);
+      assert.instanceOf(cmp.logger1, MyLogger);
+      assert.instanceOf(cmp.logger2, MyLogger);
+
+      // a factory returns always a new instance
+      assert.notEqual(cmp.logger1, cmp.logger2);
+    });
+
+    function MyComponent(index) {
+      this.index = index;
+    }
+    function MySampleClass2(myComponentFactory){
+      this.cmp1 = myComponentFactory({ index: 1 });
+      this.cmp2 = myComponentFactory({ INDEX: 2 });
+    }
+
+    it("calling the factory with custom dependencies", function(){
+      container.register("MyComponent", MyComponent);
+      container.register("MySampleClass2", MySampleClass2);
+
+      var cmp = container.resolve("mySampleClass2");
+
+      assert.instanceOf(cmp, MySampleClass2);
+      assert.instanceOf(cmp.cmp1, MyComponent);
+      assert.instanceOf(cmp.cmp2, MyComponent);
+
+      // a factory returns always a new instance
+      assert.notEqual(cmp.cmp1, cmp.cmp2);
+      assert.equal(cmp.cmp1.index, 1);
+      assert.equal(cmp.cmp2.index, 2);
     });
   });
 

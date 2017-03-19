@@ -1,15 +1,35 @@
-// My poor man DI
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const Debug = require("debug");
+const debug = Debug("shelf");
 // https://github.com/goatslacker/get-parameter-names
-function getParameterNames(fn) {
+function getDependencies(fn) {
     const COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-    const code = fn.toString().replace(COMMENTS, "");
-    const result = code.slice(code.indexOf("(") + 1, code.indexOf(")"))
+    const code = Function.prototype.toString.call(fn)
+        .replace(COMMENTS, "");
+    let parameters;
+    if (isEs6Class(code)) {
+        const constructorStart = "constructor(";
+        const constructorPosition = code.indexOf(constructorStart);
+        if (constructorPosition >= 0) {
+            parameters = code.slice(constructorPosition + constructorStart.length, code.indexOf(")"));
+        }
+        else {
+            parameters = "";
+        }
+    }
+    else {
+        parameters = code.slice(code.indexOf("(") + 1, code.indexOf(")"));
+    }
+    const result = parameters
         .match(/([^\s,]+)/g);
     return result === null
         ? []
         : result;
+}
+exports.getDependencies = getDependencies;
+function isEs6Class(funcToString) {
+    return /^class\s/.test(funcToString);
 }
 const CONTAINER_DEPENDENCY_NAME = "container";
 function requireFacility(shelf, name) {
@@ -22,12 +42,22 @@ function requireFacility(shelf, name) {
 }
 exports.requireFacility = requireFacility;
 function listFacility(shelf, name) {
-    if (name.indexOf("List", name.length - 4) >= 0) {
+    if (name.endsWith("List")) {
         return shelf.resolveAll(name.substring(0, name.length - 4));
     }
     return null;
 }
 exports.listFacility = listFacility;
+function factoryFacility(shelf, name) {
+    if (name.endsWith("Factory")) {
+        const cmpToResolve = name.substring(0, name.length - 7);
+        return (dependencies) => {
+            return shelf.resolveNew(cmpToResolve, dependencies);
+        };
+    }
+    return null;
+}
+exports.factoryFacility = factoryFacility;
 function createInstance(classFunction, args) {
     const params = [classFunction].concat(args);
     const wrapper = classFunction.bind.apply(classFunction, params);
@@ -45,11 +75,15 @@ class Container {
     }
     resolveAll(name) {
         const cmps = this.getComponents(name);
-        return cmps.map(this.resolveComponent);
+        return cmps.map((c) => this.resolveComponent(c));
     }
     resolve(name) {
         const cmps = this.getComponents(name);
         return this.resolveComponent(cmps[cmps.length - 1]);
+    }
+    resolveNew(name, dependencies) {
+        const cmps = this.getComponents(name);
+        return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
     }
     register(name, component, staticDependencies) {
         if (!name) {
@@ -63,7 +97,7 @@ class Container {
         if (typeof component === "function") {
             registeredCmp = {
                 componentClass: component,
-                parameterNames: getParameterNames(component)
+                parameterNames: getDependencies(component)
             };
         }
         else if (typeof component === "object") {
@@ -88,6 +122,7 @@ class Container {
             cps = new Array();
             this.components.set(name, cps);
         }
+        debug(`Registering ${name} with ${registeredCmp.parameterNames}...`);
         cps.push(registeredCmp);
     }
     unregister(name) {
@@ -123,22 +158,37 @@ class Container {
     }
     resolveComponent(cmp) {
         if (!cmp.instance) {
-            if (!cmp.parameterNames) {
-                throw new Error("Invalid component");
-            }
-            const dependencies = cmp.parameterNames
-                .map((name) => {
-                if (cmp.staticDependencies && cmp.staticDependencies.has(name)) {
-                    return cmp.staticDependencies.get(name);
-                }
-                return this.resolve(name);
-            });
-            if (!cmp.componentClass) {
-                throw new Error("Invalid component");
-            }
-            cmp.instance = createInstance(cmp.componentClass, dependencies);
+            cmp.instance = this.resolveNewComponent(cmp);
         }
         return cmp.instance;
+    }
+    resolveNewComponent(cmp, customDependencies) {
+        if (!cmp.parameterNames) {
+            throw new Error("Invalid component");
+        }
+        const customDependenciesMap = new Map();
+        if (customDependencies) {
+            for (const key in customDependencies) {
+                if (customDependencies.hasOwnProperty(key)) {
+                    const value = customDependencies[key];
+                    customDependenciesMap.set(key.toLowerCase(), String(value));
+                }
+            }
+        }
+        const dependencies = cmp.parameterNames
+            .map((name) => {
+            if (customDependenciesMap.has(name)) {
+                return customDependenciesMap.get(name);
+            }
+            if (cmp.staticDependencies && cmp.staticDependencies.has(name)) {
+                return cmp.staticDependencies.get(name);
+            }
+            return this.resolve(name);
+        });
+        if (!cmp.componentClass) {
+            throw new Error("Invalid component");
+        }
+        return createInstance(cmp.componentClass, dependencies);
     }
 }
 exports.Container = Container;
