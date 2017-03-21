@@ -6,6 +6,7 @@
 It allows dependency injection pattern and [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) inside Javascript clases (or constructor functions).
 
 Main goals of **shelf-dependency** are:
+
 - easy and unobstrusive dependencies declaration
 - es6 class or constructor function (legacy class declaration)
 - typescript support
@@ -22,139 +23,40 @@ Install shelf-dependency from npm:
 
     npm install shelf-dependency --save
 
-## Usage (typescript)
+## Basic usage
 
-You have the following application structure:
+**shelf-dependency** can be used to automatically inject dependencies in your javascript component.
+A component is a javascript class (or function) and can contains one or more dependencies to other components as constructor arguments:
 
-```
-- index.ts
-- foo.ts
-- bar.ts
-```
+    class Bar {
+      constructor(readonly logger) {
+      }
 
-**index** is the main entry point of your application. **Foo** is a component (a class) that we want to instantiate inside **index**. **Foo** has a dependency to **bar** and to a **logger**.  
-**Bar** is another component and has a dependency to a logger.
+      helloBar() {
+        this.logger.log("hello from bar");
+      }
+    }
 
-A component can be any Typescript class. Here for example **bar.ts** file that export **Bar** class:
+Declare **shelf-dependency** container that will contains all yourcomponents:
 
-**bar.ts**
-```
-export class Bar {
-	constructor(readonly logger: Console) {
-	}
+    const ShelfDependency = require("shelf-dependency");
+    const container = new ShelfDependency.Container();
 
-	helloBar() {
-		this.logger.log("hello from bar");
-	}
-}
-```
+Register all components:
 
-As you can see there isn't any special code or annotation. All you have to do is to export a class that will be called automatically with all the dependencies resolved, in the above case the **logger** instance.
+    container.register("bar", Bar);
+    container.register("logger", console);
 
-**Foo** component is very similar except that it has a dependency to logger and bar:
+Resolve and use `Bar` component:
 
-**foo.ts**
-```
-import {Bar} from "./bar";
+    const foo = container.resolve("bar");
+    bar.helloBar();
 
-export class Foo {
-	constructor(readonly bar: Bar, readonly logger: Console) {
-	}
 
-	helloFoo() {
-		this.logger.log("hello from foo");
-		this.bar.helloBar();
-	}
-}
-```
+See also:
 
-When **Foo** will be created an instance of class **Bar** will be passed.
-And now take a look at our application entry point, **index.ts**, where we wire up all the components together:
-
-**index.ts**
-```
-import * as ShelfDependency from "shelf-dependency"
-import {Bar} from "./bar";
-import {Foo} from "./foo";
-
-const container = new ShelfDependency.Container();
-
-container.register("foo", Foo);
-container.register("bar", Bar);
-container.register("logger", console);
-
-const foo = container.resolve("foo");
-foo.helloFoo();
-```
-
-Basically we create the **ShelfDependency.Container** and register all the components (**Bar**, **Foo** and an object for the **logger**). 
-Finally we resolve our root class **Foo**.
-
-That's it!
-
-## Usage (javascript)
-
-You have the following application structure:
-
-```
-- index.js
-- foo.js
-- bar.js
-```
-
-**index** is the main entry point of your application. **Foo** is a component (a class) that we want to instantiate inside **index**. **Foo** has a dependency to **bar** and to a **logger**.  
-**Bar** is another component and has a dependency to a logger.
-
-A component is a standard node.js function (typically a class constructor). Here for example **bar.js** file that export **Bar** class:
-
-**bar.js**
-```
-function Bar(logger){
-  this._logger = logger;
-}
-Bar.prototype.helloBar = function(){
-  this._logger.log("hello from bar");
-}
-module.exports = Bar;
-```
-
-As you can see there isn't any special code or annotation. All you have to do is to export a function that will be called automatically with all the dependencies resolved, in the above case the **logger** instance.
-
-**Foo** component is very similar except that it has a dependency to logger and bar:
-
-**foo.js**
-```
-function Foo(bar, logger){
-  this._logger = logger;
-  this._bar = bar;
-}
-Foo.prototype.helloFoo = function(){
-  this._logger.log("hello from foo");
-  this._bar.helloBar();
-}
-module.exports = Foo;
-```
-
-When **Foo** will be created an instance of class **Bar** will be passed.
-And now take a look at our application entry point, **index.js**, where we wire up all the components together:
-
-**index.js**
-```
-var ShelfDependency = require("shelf-dependency");
-var container = new ShelfDependency.Container();
-
-container.register("foo", require("./foo.js"));
-container.register("bar", require("./bar.js"));
-container.register("logger", console);
-
-var foo = container.resolve("foo");
-foo.helloFoo();
-```
-
-Basically we create the **ShelfDependency.Container** and register all the components (**Bar**, **Foo** and an object for the **logger**). 
-Finally we resolve our root class **Foo**.
-
-That's it!
+- [Usage javascript](https://github.com/davideicardi/shelf-dependency/wiki/Usage-(javascript))
+- [Usage typescript](https://github.com/davideicardi/shelf-dependency/wiki/Usage-(typescript))
 
 ## Components
 
