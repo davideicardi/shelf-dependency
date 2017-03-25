@@ -3,17 +3,17 @@
 [![npm version](https://badge.fury.io/js/shelf-dependency.svg)](http://badge.fury.io/js/shelf-dependency)
 
 **shelf-dependency** is an [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection) container for Node.js applications.
-It allows dependency injection pattern and [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) inside Javascript clases (or constructor functions).
+It allows Dependency Injection and [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) inside Javascript/Typescript classes (or constructor functions).
 
 Main goals of **shelf-dependency** are:
 
 - easy and unobstrusive dependencies declaration
+- no decorators or special requirements
 - es6 class or constructor function (legacy class declaration)
-- typescript support
+- Typescript support
 - support for standard `require`
 - easy unit testing for components
 - convention over configuration
-- no decorators or special requirements
 - resolve a list of components
 - resolve factory methods
 
@@ -221,6 +221,7 @@ container.use(myFacility);
 There are some built-in facilities available:
 - requireFacility
 - listFacility
+- factoryFacility
 
 ## requireFacility
 
