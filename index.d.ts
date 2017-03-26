@@ -9,6 +9,7 @@ export declare class Container {
     resolveAll(name: string): any[];
     resolve(name: string): any;
     resolveNew(name: string, dependencies?: any): any;
+    registerProperties(obj: any): void;
     register(name: string, component: any, staticDependencies?: any): void;
     unregister(name: string): void;
     use(facilityFunction: Facility): void;

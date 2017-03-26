@@ -6,5 +6,6 @@
     "command": "npm",
     "args": ["run", "develop"],
     "isBackground": true,
+    "isShellCommand": true,
     "problemMatcher": "$tsc"
 }

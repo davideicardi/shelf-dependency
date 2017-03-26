@@ -242,6 +242,21 @@ describe("Container", function(){
     });
   });
 
+  describe("register a component using an object properties", function(){
+
+    var myInstance1 = {};
+
+    beforeEach(function(){
+      container.registerProperties( { myClass1: myInstance1 });
+    });
+
+    it("can be resolved", function(){
+      var cmp = container.resolve("myClass1");
+
+      assert.equal(cmp, myInstance1);
+    });
+  });
+
   describe("register a component having a dependency to another component", function(){
 
     function Engine() {
@@ -393,28 +408,38 @@ describe("Container", function(){
       assert.notEqual(cmp.logger1, cmp.logger2);
     });
 
-    function MyComponent(index) {
-      this.index = index;
-    }
-    function MySampleClass2(myComponentFactory){
-      this.cmp1 = myComponentFactory({ index: 1 });
-      this.cmp2 = myComponentFactory({ INDEX: 2 });
+    function MyComponent(param1, anotherParam) {
+      this.param1 = param1;
+      this.anotherParam = anotherParam;
     }
 
     it("calling the factory with custom dependencies", function(){
       container.register("MyComponent", MyComponent);
-      container.register("MySampleClass2", MySampleClass2);
 
-      var cmp = container.resolve("mySampleClass2");
+      var factory = container.resolve("myComponentFactory");
 
-      assert.instanceOf(cmp, MySampleClass2);
-      assert.instanceOf(cmp.cmp1, MyComponent);
-      assert.instanceOf(cmp.cmp2, MyComponent);
+      const cmp1 = factory({ param1: 1, anotherParam: "test1" });
+      const cmp2 = factory({ param1: 2, anotherParam: "test2" });
+
+      assert.instanceOf(cmp1, MyComponent);
+      assert.instanceOf(cmp2, MyComponent);
 
       // a factory returns always a new instance
-      assert.notEqual(cmp.cmp1, cmp.cmp2);
-      assert.equal(cmp.cmp1.index, 1);
-      assert.equal(cmp.cmp2.index, 2);
+      assert.notEqual(cmp1, cmp2);
+      assert.equal(cmp1.param1, 1);
+      assert.equal(cmp2.param1, 2);
+      assert.equal(cmp1.anotherParam, "test1");
+      assert.equal(cmp2.anotherParam, "test2");
+    });
+
+    it("factory custom dependencies are case sensitive", function(){
+      container.register("MyComponent", MyComponent);
+
+      var factory = container.resolve("myComponentFactory");
+
+      function f() { factory({ PARAM1: 1, AnotherParam: "test1" }); }
+
+      assert.throw(f);
     });
   });
 

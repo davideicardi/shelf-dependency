@@ -85,6 +85,13 @@ class Container {
         const cmps = this.getComponents(name);
         return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
     }
+    registerProperties(obj) {
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                this.register(key, obj[key]);
+            }
+        }
+    }
     register(name, component, staticDependencies) {
         if (!name) {
             throw new Error("Invalid component name.");
@@ -171,7 +178,7 @@ class Container {
             for (const key in customDependencies) {
                 if (customDependencies.hasOwnProperty(key)) {
                     const value = customDependencies[key];
-                    customDependenciesMap.set(key.toLowerCase(), String(value));
+                    customDependenciesMap.set(key, String(value));
                 }
             }
         }
