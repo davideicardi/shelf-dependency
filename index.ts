@@ -212,7 +212,7 @@ export class Container {
 			for (const key in customDependencies) {
 				if (customDependencies.hasOwnProperty(key)) {
 					const value = customDependencies[key];
-					customDependenciesMap.set(key, String(value));
+					customDependenciesMap.set(key, value);
 				}
 			}
 		}
