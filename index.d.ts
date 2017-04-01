@@ -1,6 +1,7 @@
 export declare function getDependencies(fn: Function): string[];
 export declare function requireFacility(shelf: Container, name: string): any;
 export declare function listFacility(shelf: Container, name: string): any[] | null;
+export declare type Factory<T> = (dependencies?: any) => T;
 export declare function factoryFacility(shelf: Container, name: string): ((dependencies?: any) => any) | null;
 export declare type Facility = (shelf: Container, name: string) => any;
 export declare class Container {

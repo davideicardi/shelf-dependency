@@ -2,7 +2,7 @@ import * as Debug from "debug";
 const debug = Debug("shelf");
 
 // https://github.com/goatslacker/get-parameter-names
-export function getDependencies(fn: Function): string[] {
+export function getDependencies(fn: Function): string[] { // tslint:disable-line:ban-types
 	const COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 	const code = Function.prototype.toString.call(fn)
 		.replace(COMMENTS, "");
@@ -50,6 +50,7 @@ export function listFacility(shelf: Container, name: string) {
 	return null;
 }
 
+export type Factory<T> = (dependencies?: any) => T;
 export function factoryFacility(shelf: Container, name: string) {
 	if (name.endsWith("Factory")) {
 		const cmpToResolve = name.substring(0, name.length - 7);
@@ -61,7 +62,7 @@ export function factoryFacility(shelf: Container, name: string) {
 	return null;
 }
 
-function createInstance(classFunction: Function, args: any[]) {
+function createInstance(classFunction: Function, args: any[]) { // tslint:disable-line:ban-types
 		const params = [classFunction].concat(args);
 
 		const wrapper = classFunction.bind.apply(classFunction, params);
@@ -79,7 +80,7 @@ class Component {
 	instance?: any;
 	parameterNames?: string[];
 	staticDependencies?: Map<string, any>;
-	componentClass?: Function;
+	componentClass?: Function; // tslint:disable-line:ban-types
 }
 
 export class Container {
