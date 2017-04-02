@@ -32,6 +32,11 @@ function isEs6Class(funcToString) {
     return /^class\s/.test(funcToString);
 }
 const CONTAINER_DEPENDENCY_NAME = "container";
+var LifeStyle;
+(function (LifeStyle) {
+    LifeStyle[LifeStyle["Singleton"] = 0] = "Singleton";
+    LifeStyle[LifeStyle["Transient"] = 1] = "Transient";
+})(LifeStyle = exports.LifeStyle || (exports.LifeStyle = {}));
 function requireFacility(shelf, name) {
     try {
         return require(name);
@@ -66,12 +71,17 @@ function createInstance(classFunction, args) {
 function normalizeName(name) {
     return name.toLowerCase().replace(/[\.\-]/, "");
 }
-class Component {
+class ComponentInfo {
 }
 class Container {
     constructor() {
         this.components = new Map();
         this.facilities = new Array();
+        this.components.set(CONTAINER_DEPENDENCY_NAME, [{
+                instance: this,
+                options: { lifeStyle: LifeStyle.Singleton },
+                dependenciesNames: []
+            }]);
     }
     resolveAll(name) {
         const cmps = this.getComponents(name);
@@ -85,17 +95,11 @@ class Container {
         const cmps = this.getComponents(name);
         return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
     }
-    registerProperties(obj) {
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                this.register(key, obj[key]);
-            }
-        }
-    }
-    register(name, component, staticDependencies) {
+    register(name, component, staticDependencies, options) {
         if (!name) {
             throw new Error("Invalid component name.");
         }
+        options = options || { lifeStyle: LifeStyle.Singleton };
         name = normalizeName(name);
         if (name === CONTAINER_DEPENDENCY_NAME) {
             throw Error("Cannot register a component called 'container'");
@@ -103,13 +107,19 @@ class Container {
         let registeredCmp;
         if (typeof component === "function") {
             registeredCmp = {
-                componentClass: component,
-                parameterNames: getDependencies(component)
+                options,
+                componentFunction: component,
+                dependenciesNames: getDependencies(component)
             };
         }
         else if (typeof component === "object") {
+            if (options.lifeStyle === LifeStyle.Transient) {
+                throw new Error("Cannot register instance components as Transient");
+            }
             registeredCmp = {
-                instance: component
+                options,
+                instance: component,
+                dependenciesNames: []
             };
         }
         else {
@@ -129,8 +139,15 @@ class Container {
             cps = new Array();
             this.components.set(name, cps);
         }
-        debug(`Registering ${name} with ${registeredCmp.parameterNames}...`);
+        debug(`Registering ${name} with ${registeredCmp.dependenciesNames}...`);
         cps.push(registeredCmp);
+    }
+    registerProperties(obj) {
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                this.register(key, obj[key]);
+            }
+        }
     }
     unregister(name) {
         if (!name) {
@@ -148,15 +165,16 @@ class Container {
             throw new Error("Invalid component name.");
         }
         const normalName = normalizeName(name);
-        if (normalName === CONTAINER_DEPENDENCY_NAME) {
-            return [{ instance: this }];
-        }
         const cmps = this.components.get(normalName);
         if (!cmps) {
             for (const facility of this.facilities) {
                 const result = facility(this, name);
                 if (result) {
-                    return [{ instance: result }];
+                    return [{
+                            instance: result,
+                            options: { lifeStyle: LifeStyle.Transient },
+                            dependenciesNames: []
+                        }];
                 }
             }
             throw new Error("Cannot resolve component '" + name + "'");
@@ -164,38 +182,39 @@ class Container {
         return cmps;
     }
     resolveComponent(cmp) {
-        if (!cmp.instance) {
-            cmp.instance = this.resolveNewComponent(cmp);
+        let instance = cmp.instance;
+        if (!instance) {
+            instance = this.resolveNewComponent(cmp);
+            if (cmp.options.lifeStyle === LifeStyle.Singleton) {
+                cmp.instance = instance;
+            }
         }
-        return cmp.instance;
+        return instance;
     }
-    resolveNewComponent(cmp, customDependencies) {
-        if (!cmp.parameterNames) {
-            throw new Error("Invalid component");
-        }
-        const customDependenciesMap = new Map();
-        if (customDependencies) {
-            for (const key in customDependencies) {
-                if (customDependencies.hasOwnProperty(key)) {
-                    const value = customDependencies[key];
-                    customDependenciesMap.set(key, value);
+    resolveNewComponent(cmp, dependencies) {
+        const dependenciesMap = new Map();
+        if (dependencies) {
+            for (const key in dependencies) {
+                if (dependencies.hasOwnProperty(key)) {
+                    const value = dependencies[key];
+                    dependenciesMap.set(key, value);
                 }
             }
         }
-        const dependencies = cmp.parameterNames
+        const dependenciesArgs = cmp.dependenciesNames
             .map((name) => {
-            if (customDependenciesMap.has(name)) {
-                return customDependenciesMap.get(name);
+            if (dependenciesMap.has(name)) {
+                return dependenciesMap.get(name);
             }
             if (cmp.staticDependencies && cmp.staticDependencies.has(name)) {
                 return cmp.staticDependencies.get(name);
             }
             return this.resolve(name);
         });
-        if (!cmp.componentClass) {
-            throw new Error("Invalid component");
+        if (!cmp.componentFunction) {
+            throw new Error("Invalid component function");
         }
-        return createInstance(cmp.componentClass, dependencies);
+        return createInstance(cmp.componentFunction, dependenciesArgs);
     }
 }
 exports.Container = Container;

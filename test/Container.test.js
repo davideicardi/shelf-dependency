@@ -242,7 +242,7 @@ describe("Container", function(){
     });
   });
 
-  describe("register a component using an object properties", function(){
+  describe("register all components using an object properties", function(){
 
     var myInstance1 = {};
 
@@ -302,6 +302,26 @@ describe("Container", function(){
     });
   });
 
+  describe("register a transient component", function(){
+
+    function Foo(){
+    }
+
+    beforeEach(function(){
+      container.register("foo", Foo, {}, { lifeStyle: ShelfDependency.LifeStyle.Transient } );
+    });
+
+    it("can be resolved and returns always a different instance", function(){
+      var cmp1 = container.resolve("foo");
+      var cmp2 = container.resolve("foo");
+
+      assert.instanceOf(cmp1, Foo);
+      assert.instanceOf(cmp2, Foo);
+      // transient components returns always a new instance
+      assert.notEqual(cmp1, cmp2);
+    });
+  });
+
   describe("register with static dependency", function(){
 
     function Duck(name){
@@ -353,7 +373,6 @@ describe("Container", function(){
       assert.throw(fn, "Cannot resolve component 'notExisting'");
     });
   });
-
 
   describe("resolve a list of components (listFacility)", function(){
 

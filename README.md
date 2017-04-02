@@ -17,6 +17,8 @@ Main goals of **shelf-dependency** are:
 - resolve a list of components
 - resolve factory methods
 
+This project is inspired by [Castle Windsor](https://github.com/castleproject/Windsor).
+
 ## Installation
 
 Install shelf-dependency from npm:
@@ -63,7 +65,7 @@ See also:
 A component can be a class or an already instantiated object. Typescript or ES6 classes are supported:
 
 Before ecmascript 6 classes should be created using the legacy function constructor syntax. If you don't know how to create a Javascript class take a look at [Mixu's Node book](http://book.mixu.net/node/ch6.html) for a quick introduction.  
-Components are considered always [singleton](http://en.wikipedia.org/wiki/Singleton_pattern), only one instance of a component will be created and every dependency on that component will receive the same instance. For transient components or to create more than one instance of a component see `factoryFacility` below. 
+Components are usually considered [singleton](http://en.wikipedia.org/wiki/Singleton_pattern), only one instance of a component will be created and every dependency on that component will receive the same instance. For transient components or to create more than one instance of a component see `factoryFacility` below. 
 
 Components names are case insensitive ('car' is equal to 'CAR') and every dots and dashes are removed ('socket.io' is resolved as 'socketio').
 
@@ -100,6 +102,23 @@ In the above case **shelf-dependency** when instantiating Car class will pass on
 
 Component can also be object instance, the difference is that in this case is your responsability to create the object.
 
+## Container class
+
+The `Container` class is where every components must be register and where you resolve your root component.
+The `container` class has the following interface:
+
+```
+export class Container {
+  register(name: string, component: any, staticDependencies?: any, options?: RegisterOptions): void;
+  registerProperties(obj: any): void;
+  resolve(name: string): any;
+  resolveNew(name: string, dependencies?: any): any;
+  resolveAll(name: string): any[];
+  unregister(name: string): void;
+  use(facilityFunction: Facility): void;
+}
+```
+
 ## Registering a component
 
 A component can be registered by calling `Container.register` instance method.
@@ -123,6 +142,12 @@ You can also register objects:
 
 ```
 container.register("car", { name: "Ferrari" });
+```
+
+You can register **transient** components (each time is resolved a new instance is created) using 
+
+```
+container.register("foo", Foo, {}, { lifeStyle: ShelfDependency.LifeStyle.Transient });
 ```
 
 ## Resolving a component
@@ -275,8 +300,8 @@ assert.instanceOf(cmp._loggerList[1], MyLogger2);
 
 `factoryFacility` is used to create factory function that can be used to create 
 new instances of a specific component. The factory dependency must end with 'Factory'.
-The factory method takes an optional object with additional dependencies.
- This can be useful to create multiple instance of a given component.
+Factory method takes an optional object with additional dependencies.
+This facility can be useful to create multiple instance of a given component and to specify different dependencies for each instance.
 
 ```
 function MyLogger(source){
