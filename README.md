@@ -220,7 +220,7 @@ var cars = container.resolveAll("car");
 ```
 
 `resolveAll` gets an array of all the registered components, in the same order
-of the register calls.
+of the register calls. If no components are found an empty array is returned.
 
 If you have a component that need to receive a list of other components of the
 same kind you can use the `listFacility`. See below.

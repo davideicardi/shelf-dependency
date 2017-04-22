@@ -113,12 +113,18 @@ export class Container {
 
 	resolve(name: string): any {
 		const cmps = this.getComponents(name);
+		if (cmps.length === 0) {
+			throw new Error("Cannot resolve component '" + name + "'");
+		}
 
 		return this.resolveComponent(cmps[cmps.length - 1]);
 	}
 
 	resolveNew(name: string, dependencies?: any): any {
 		const cmps = this.getComponents(name);
+		if (cmps.length === 0) {
+			throw new Error("Cannot resolve component '" + name + "'");
+		}
 
 		return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
 	}
@@ -217,7 +223,7 @@ export class Container {
 				}
 			}
 
-			throw new Error("Cannot resolve component '" + name + "'");
+			return [];
 		}
 
 		return cmps;

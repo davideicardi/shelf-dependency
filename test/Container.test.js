@@ -22,6 +22,12 @@ describe("Container", function(){
     assert.throw(fn, "Cannot resolve component 'notExisting'");
   });
 
+  it("resolveAll passing an unknown component return an empty array", function(){
+    const result = container.resolveAll("notExisting");
+
+    assert.equal(result.length, 0);
+  });
+
   it("registering a component with a reserved keyworkds throw an exception", function(){
     var fn = function() {container.register("container", {});};
     assert.throw(fn);

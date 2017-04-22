@@ -89,10 +89,16 @@ class Container {
     }
     resolve(name) {
         const cmps = this.getComponents(name);
+        if (cmps.length === 0) {
+            throw new Error("Cannot resolve component '" + name + "'");
+        }
         return this.resolveComponent(cmps[cmps.length - 1]);
     }
     resolveNew(name, dependencies) {
         const cmps = this.getComponents(name);
+        if (cmps.length === 0) {
+            throw new Error("Cannot resolve component '" + name + "'");
+        }
         return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
     }
     register(name, component, staticDependencies, options) {
@@ -177,7 +183,7 @@ class Container {
                         }];
                 }
             }
-            throw new Error("Cannot resolve component '" + name + "'");
+            return [];
         }
         return cmps;
     }
