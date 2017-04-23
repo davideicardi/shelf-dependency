@@ -42,6 +42,7 @@ export enum LifeStyle {
 export interface RegisterOptions {
 	lifeStyle: LifeStyle;
 	tags: string[];
+	dependsOn: any;
 }
 
 export interface UnregisterOptions {
@@ -50,7 +51,8 @@ export interface UnregisterOptions {
 
 const DefaultRegisterOptions: RegisterOptions = {
 	lifeStyle: LifeStyle.Singleton,
-	tags: []
+	tags: [],
+	dependsOn: {}
 };
 
 export function requireFacility(shelf: Container, name: string) {
@@ -139,7 +141,7 @@ export class Container {
 		return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
 	}
 
-	register(name: string, component: any, staticDependencies?: any, options?: Partial<RegisterOptions>): void {
+	register(name: string, component: any, options?: Partial<RegisterOptions>): void {
 		if (!name) {
 			throw new Error("Invalid component name.");
 		}
@@ -172,11 +174,11 @@ export class Container {
 			throw Error("Invalid component type, expected 'function' or 'object'");
 		}
 
-		if (staticDependencies) {
+		if (compOptions.dependsOn) {
 			registeredCmp.staticDependencies = new Map<string, any>();
-			for (const key in staticDependencies) {
-				if (staticDependencies.hasOwnProperty(key)) {
-					const value = staticDependencies[key];
+			for (const key in compOptions.dependsOn) {
+				if (compOptions.dependsOn.hasOwnProperty(key)) {
+					const value = compOptions.dependsOn[key];
 					registeredCmp.staticDependencies.set(key, String(value));
 				}
 			}
@@ -245,7 +247,7 @@ export class Container {
 				if (result) {
 					return [{
 						instance: result,
-						options: {lifeStyle: LifeStyle.Transient, tags: []},
+						options: {lifeStyle: LifeStyle.Transient, tags: [], dependsOn: {}},
 						dependenciesNames: []
 					}];
 				}

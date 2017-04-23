@@ -39,7 +39,8 @@ var LifeStyle;
 })(LifeStyle = exports.LifeStyle || (exports.LifeStyle = {}));
 const DefaultRegisterOptions = {
     lifeStyle: LifeStyle.Singleton,
-    tags: []
+    tags: [],
+    dependsOn: {}
 };
 function requireFacility(shelf, name) {
     try {
@@ -105,7 +106,7 @@ class Container {
         }
         return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
     }
-    register(name, component, staticDependencies, options) {
+    register(name, component, options) {
         if (!name) {
             throw new Error("Invalid component name.");
         }
@@ -135,11 +136,11 @@ class Container {
         else {
             throw Error("Invalid component type, expected 'function' or 'object'");
         }
-        if (staticDependencies) {
+        if (compOptions.dependsOn) {
             registeredCmp.staticDependencies = new Map();
-            for (const key in staticDependencies) {
-                if (staticDependencies.hasOwnProperty(key)) {
-                    const value = staticDependencies[key];
+            for (const key in compOptions.dependsOn) {
+                if (compOptions.dependsOn.hasOwnProperty(key)) {
+                    const value = compOptions.dependsOn[key];
                     registeredCmp.staticDependencies.set(key, String(value));
                 }
             }
@@ -200,7 +201,7 @@ class Container {
                 if (result) {
                     return [{
                             instance: result,
-                            options: { lifeStyle: LifeStyle.Transient, tags: [] },
+                            options: { lifeStyle: LifeStyle.Transient, tags: [], dependsOn: {} },
                             dependenciesNames: []
                         }];
                 }

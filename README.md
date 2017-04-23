@@ -105,16 +105,16 @@ Component can also be object instance, the difference is that in this case is yo
 ## Container class
 
 The `Container` class is where every components must be register and where you resolve your root component.
-The `container` class has the following interface:
+The `Container` class has the following interface:
 
 ```
 export class Container {
-  register(name: string, component: any, staticDependencies?: any, options?: RegisterOptions): void;
+  register(name: string, component: any, options?: Partial<RegisterOptions>): void;
   registerProperties(obj: any): void;
   resolve(name: string): any;
   resolveNew(name: string, dependencies?: any): any;
   resolveAll(name: string): any[];
-  unregister(name: string): void;
+  unregister(name?: string, options?: Partial<UnregisterOptions>): void;
   use(facilityFunction: Facility): void;
 }
 ```
@@ -147,7 +147,7 @@ container.register("car", { name: "Ferrari" });
 You can register **transient** components (each time is resolved a new instance is created) using 
 
 ```
-container.register("foo", Foo, {}, { lifeStyle: ShelfDependency.LifeStyle.Transient });
+container.register("foo", Foo, { lifeStyle: ShelfDependency.LifeStyle.Transient });
 ```
 
 ## Resolving a component
@@ -169,6 +169,14 @@ var car = new Car();
 If the constructor contains one or more parameters (dependencies), each parameters is resolved using the parameter name. The process is recursive.  
 If one component cannot be resolved an exception is throw.
 
+## Registering a component with tags
+
+```
+container.register("car", Ferrari, { tags: ["Ferrari", "italy"] });
+container.register("car", Porsche, { tags: ["Porsche", "germany"] });
+container.register("bicycle", Bianchi, { tags: ["Bianchi", "italy"] });
+```
+
 ## Registering a component with a static dependency
 
 Sometime you need to pass options or other properties to component that aren't
@@ -186,7 +194,7 @@ function Duck(name){
 You can register the Duck component using this code:
 
 ```
-container.register("duck", Duck, { name: "Donald" } );
+container.register("duck", Duck, { dependsOn: { name: "Donald" } } );
 ```
 
 Any dependency passed explicitly in this way has the precedence over standard
@@ -203,6 +211,12 @@ container.unregister("car");
 
 This instruction deletes any reference to the specified component but doesn't
 have any effect on already resolved instances.
+
+You can also unregister all components by tags:
+
+```
+container.unregister(undefined, { tags: ["myTag"] });
+```
 
 ## Resolve a list of components
 

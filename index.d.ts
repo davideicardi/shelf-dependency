@@ -6,6 +6,7 @@ export declare enum LifeStyle {
 export interface RegisterOptions {
     lifeStyle: LifeStyle;
     tags: string[];
+    dependsOn: any;
 }
 export interface UnregisterOptions {
     tags: string[];
@@ -22,7 +23,7 @@ export declare class Container {
     resolveAll(name: string): any[];
     resolve(name: string): any;
     resolveNew(name: string, dependencies?: any): any;
-    register(name: string, component: any, staticDependencies?: any, options?: Partial<RegisterOptions>): void;
+    register(name: string, component: any, options?: Partial<RegisterOptions>): void;
     registerProperties(obj: any): void;
     unregister(name?: string, options?: Partial<UnregisterOptions>): void;
     use(facilityFunction: Facility): void;
