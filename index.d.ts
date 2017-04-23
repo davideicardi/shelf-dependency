@@ -4,7 +4,11 @@ export declare enum LifeStyle {
     Transient = 1,
 }
 export interface RegisterOptions {
-    lifeStyle?: LifeStyle;
+    lifeStyle: LifeStyle;
+    tags: string[];
+}
+export interface UnregisterOptions {
+    tags: string[];
 }
 export declare function requireFacility(shelf: Container, name: string): any;
 export declare function listFacility(shelf: Container, name: string): any[] | null;
@@ -18,9 +22,9 @@ export declare class Container {
     resolveAll(name: string): any[];
     resolve(name: string): any;
     resolveNew(name: string, dependencies?: any): any;
-    register(name: string, component: any, staticDependencies?: any, options?: RegisterOptions): void;
+    register(name: string, component: any, staticDependencies?: any, options?: Partial<RegisterOptions>): void;
     registerProperties(obj: any): void;
-    unregister(name: string): void;
+    unregister(name?: string, options?: Partial<UnregisterOptions>): void;
     use(facilityFunction: Facility): void;
     private getComponents(name);
     private resolveComponent(cmp);

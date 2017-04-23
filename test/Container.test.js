@@ -212,6 +212,60 @@ describe("Container", function(){
     });
   });
 
+  describe("registering components with tags", function(){
+    function Ferrari(){
+    }
+    function Porsche(){
+    }
+    function Bianchi(){
+    }
+
+    beforeEach(function(){
+      container.register("car", Ferrari, undefined, { tags: ["Ferrari", "italy"] });
+      container.register("car", Porsche, undefined, { tags: ["Porsche", "germany"] });
+      container.register("bicycle", Bianchi, undefined, { tags: ["Bianchi", "italy"] });
+    });
+
+    it("resolve by name (default)", function(){
+      let cmps = container.resolveAll("car");
+      assert.equal(cmps.length, 2);
+      assert.instanceOf(cmps[0], Ferrari);
+      assert.instanceOf(cmps[1], Porsche);
+      cmps = container.resolveAll("bicycle");
+      assert.equal(cmps.length, 1);
+      assert.instanceOf(cmps[0], Bianchi);
+    });
+
+    it("unregistering components by tags", function(){
+      container.unregister(undefined, { tags: ["germany"]});
+
+      let cmps = container.resolveAll("car");
+      assert.equal(cmps.length, 1);
+      assert.instanceOf(cmps[0], Ferrari);
+      cmps = container.resolveAll("bicycle");
+      assert.equal(cmps.length, 1);
+      assert.instanceOf(cmps[0], Bianchi);
+
+      container.unregister(undefined, { tags: ["italy"]});
+      cmps = container.resolveAll("car");
+      assert.equal(cmps.length, 0);
+      cmps = container.resolveAll("bicycle");
+      assert.equal(cmps.length, 0);
+    });
+
+    it("unregistering components by empty tags has no effect", function(){
+      container.unregister(undefined, { tags: []});
+
+      let cmps = container.resolveAll("car");
+      assert.equal(cmps.length, 2);
+      assert.instanceOf(cmps[0], Ferrari);
+      assert.instanceOf(cmps[1], Porsche);
+      cmps = container.resolveAll("bicycle");
+      assert.equal(cmps.length, 1);
+      assert.instanceOf(cmps[0], Bianchi);
+    });
+  });
+
   describe("unregister a component", function(){
     function MyClass1(){
     }

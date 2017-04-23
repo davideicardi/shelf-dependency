@@ -37,6 +37,10 @@ var LifeStyle;
     LifeStyle[LifeStyle["Singleton"] = 0] = "Singleton";
     LifeStyle[LifeStyle["Transient"] = 1] = "Transient";
 })(LifeStyle = exports.LifeStyle || (exports.LifeStyle = {}));
+const DefaultRegisterOptions = {
+    lifeStyle: LifeStyle.Singleton,
+    tags: []
+};
 function requireFacility(shelf, name) {
     try {
         return require(name);
@@ -79,7 +83,7 @@ class Container {
         this.facilities = new Array();
         this.components.set(CONTAINER_DEPENDENCY_NAME, [{
                 instance: this,
-                options: { lifeStyle: LifeStyle.Singleton },
+                options: DefaultRegisterOptions,
                 dependenciesNames: []
             }]);
     }
@@ -105,7 +109,7 @@ class Container {
         if (!name) {
             throw new Error("Invalid component name.");
         }
-        options = options || { lifeStyle: LifeStyle.Singleton };
+        const compOptions = Object.assign({}, DefaultRegisterOptions, options || {});
         name = normalizeName(name);
         if (name === CONTAINER_DEPENDENCY_NAME) {
             throw Error("Cannot register a component called 'container'");
@@ -113,17 +117,17 @@ class Container {
         let registeredCmp;
         if (typeof component === "function") {
             registeredCmp = {
-                options,
+                options: compOptions,
                 componentFunction: component,
                 dependenciesNames: getDependencies(component)
             };
         }
         else if (typeof component === "object") {
-            if (options.lifeStyle === LifeStyle.Transient) {
+            if (compOptions.lifeStyle === LifeStyle.Transient) {
                 throw new Error("Cannot register instance components as Transient");
             }
             registeredCmp = {
-                options,
+                options: compOptions,
                 instance: component,
                 dependenciesNames: []
             };
@@ -155,12 +159,30 @@ class Container {
             }
         }
     }
-    unregister(name) {
-        if (!name) {
-            throw Error("Invalid component name.");
+    unregister(name, options) {
+        if (name) {
+            name = normalizeName(name);
         }
-        name = name.toLowerCase();
-        this.components.delete(name);
+        if (!name && !options) {
+            return;
+        }
+        if (name && !options) {
+            this.components.delete(name);
+        }
+        else if (options) {
+            for (const [k, cmps] of this.components) {
+                if (name && name !== k) {
+                    continue;
+                }
+                const filteredCmps = cmps.filter((c) => !matchUnregisterOptions(c, options));
+                if (filteredCmps.length === 0) {
+                    this.components.delete(k);
+                }
+                else if (filteredCmps.length < cmps.length) {
+                    this.components.set(k, filteredCmps);
+                }
+            }
+        }
     }
     ;
     use(facilityFunction) {
@@ -178,7 +200,7 @@ class Container {
                 if (result) {
                     return [{
                             instance: result,
-                            options: { lifeStyle: LifeStyle.Transient },
+                            options: { lifeStyle: LifeStyle.Transient, tags: [] },
                             dependenciesNames: []
                         }];
                 }
@@ -224,4 +246,15 @@ class Container {
     }
 }
 exports.Container = Container;
+function matchUnregisterOptions(component, options) {
+    if (!options.tags || !options.tags.length) {
+        return false;
+    }
+    for (const t of options.tags) {
+        if (component.options.tags.indexOf(t) < 0) {
+            return false;
+        }
+    }
+    return true;
+}
 //# sourceMappingURL=index.js.map

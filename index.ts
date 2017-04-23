@@ -40,8 +40,18 @@ export enum LifeStyle {
 }
 
 export interface RegisterOptions {
-	lifeStyle?: LifeStyle;
+	lifeStyle: LifeStyle;
+	tags: string[];
 }
+
+export interface UnregisterOptions {
+	tags: string[];
+}
+
+const DefaultRegisterOptions: RegisterOptions = {
+	lifeStyle: LifeStyle.Singleton,
+	tags: []
+};
 
 export function requireFacility(shelf: Container, name: string) {
 	try {
@@ -100,7 +110,7 @@ export class Container {
 	constructor() {
 		this.components.set(CONTAINER_DEPENDENCY_NAME, [{
 			instance: this,
-			options: {lifeStyle: LifeStyle.Singleton},
+			options: DefaultRegisterOptions,
 			dependenciesNames: []
 		}]);
 	}
@@ -129,12 +139,12 @@ export class Container {
 		return this.resolveNewComponent(cmps[cmps.length - 1], dependencies);
 	}
 
-	register(name: string, component: any, staticDependencies?: any, options?: RegisterOptions): void {
+	register(name: string, component: any, staticDependencies?: any, options?: Partial<RegisterOptions>): void {
 		if (!name) {
 			throw new Error("Invalid component name.");
 		}
 
-		options = options || { lifeStyle: LifeStyle.Singleton };
+		const compOptions: RegisterOptions = Object.assign({}, DefaultRegisterOptions, options || {});
 
 		name = normalizeName(name);
 		if (name === CONTAINER_DEPENDENCY_NAME) {
@@ -144,17 +154,17 @@ export class Container {
 		let registeredCmp: ComponentInfo;
 		if (typeof component === "function") { // function or es6 class
 			registeredCmp = {
-					options,
+					options: compOptions,
 					componentFunction: component,
 					dependenciesNames: getDependencies(component)
 				};
 		}	else if (typeof component === "object") {
-			if (options.lifeStyle === LifeStyle.Transient) {
+			if (compOptions.lifeStyle === LifeStyle.Transient) {
 				throw new Error("Cannot register instance components as Transient");
 			}
 
 			registeredCmp = {
-					options,
+					options: compOptions,
 					instance: component,
 					dependenciesNames: []
 				};
@@ -191,13 +201,31 @@ export class Container {
 		}
 	}
 
-	unregister(name: string): void {
-		if (!name) {
-			throw Error("Invalid component name.");
+	unregister(name?: string, options?: Partial<UnregisterOptions>): void {
+		if (name) {
+			name = normalizeName(name);
 		}
-		name = name.toLowerCase();
 
-		this.components.delete(name);
+		if (!name && !options) {
+			return;
+		}
+
+		if (name && !options) {
+			this.components.delete(name);
+		} else if (options) {
+			for (const [k, cmps] of this.components) {
+				if (name && name !== k) {
+					continue;
+				}
+
+				const filteredCmps = cmps.filter((c) => !matchUnregisterOptions(c, options));
+				if (filteredCmps.length === 0) {
+					this.components.delete(k);
+				} else if (filteredCmps.length < cmps.length) {
+					this.components.set(k, filteredCmps);
+				}
+			}
+		}
 	};
 
 	use(facilityFunction: Facility): void {
@@ -217,7 +245,7 @@ export class Container {
 				if (result) {
 					return [{
 						instance: result,
-						options: {lifeStyle: LifeStyle.Transient},
+						options: {lifeStyle: LifeStyle.Transient, tags: []},
 						dependenciesNames: []
 					}];
 				}
@@ -272,4 +300,18 @@ export class Container {
 
 		return createInstance(cmp.componentFunction, dependenciesArgs);
 	}
+}
+
+function matchUnregisterOptions(component: ComponentInfo, options: Partial<UnregisterOptions>): boolean {
+	if (!options.tags || !options.tags.length) {
+		return false;
+	}
+
+	for (const t of options.tags) {
+		if (component.options.tags.indexOf(t) < 0) {
+			return false;
+		}
+	}
+
+	return true;
 }
