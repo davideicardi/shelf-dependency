@@ -4,9 +4,9 @@
     "target": "es6",
     "moduleResolution": "node",
 
+    "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noFallthroughCasesInSwitch": true,
@@ -17,6 +17,5 @@
   "exclude": [
     "node_modules",
     "**/*.d.ts"
-  ],
-  "compileOnSave": true
+  ]
 }

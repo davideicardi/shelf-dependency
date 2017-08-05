@@ -146,7 +146,7 @@ export class Container {
 			throw new Error("Invalid component name.");
 		}
 
-		const compOptions: RegisterOptions = Object.assign({}, DefaultRegisterOptions, options || {});
+		const compOptions: RegisterOptions = {...DefaultRegisterOptions, ...(options || {})};
 
 		name = normalizeName(name);
 		if (name === CONTAINER_DEPENDENCY_NAME) {

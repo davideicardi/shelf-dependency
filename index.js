@@ -110,7 +110,7 @@ class Container {
         if (!name) {
             throw new Error("Invalid component name.");
         }
-        const compOptions = Object.assign({}, DefaultRegisterOptions, options || {});
+        const compOptions = Object.assign({}, DefaultRegisterOptions, (options || {}));
         name = normalizeName(name);
         if (name === CONTAINER_DEPENDENCY_NAME) {
             throw Error("Cannot register a component called 'container'");
