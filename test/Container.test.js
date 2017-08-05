@@ -391,5 +391,28 @@ describe("Container", function () {
             chai_1.assert.throw(f);
         });
     });
+    describe("resolve a typescript typed factory function (factoryFacility)", function () {
+        beforeEach(function () {
+            container.use(ShelfDependency.factoryFacility);
+        });
+        class MyLogger {
+        }
+        class MySampleClass {
+            constructor(loggerFactory) {
+                this.logger1 = loggerFactory();
+                this.logger2 = loggerFactory();
+            }
+        }
+        it("resolving the factory", function () {
+            container.register("logger", MyLogger);
+            container.register("MySampleClass", MySampleClass);
+            const cmp = container.resolve("mySampleClass");
+            chai_1.assert.instanceOf(cmp, MySampleClass);
+            chai_1.assert.instanceOf(cmp.logger1, MyLogger);
+            chai_1.assert.instanceOf(cmp.logger2, MyLogger);
+            // a factory returns always a new instance
+            chai_1.assert.notEqual(cmp.logger1, cmp.logger2);
+        });
+    });
 });
 //# sourceMappingURL=Container.test.js.map

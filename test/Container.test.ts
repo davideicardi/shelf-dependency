@@ -517,4 +517,36 @@ describe("Container", function(){
 		});
 	});
 
+	describe("resolve a typescript typed factory function (factoryFacility)", function(){
+
+		beforeEach(function() {
+			container.use(ShelfDependency.factoryFacility);
+		});
+
+		class MyLogger {}
+
+		class MySampleClass {
+			logger1: MyLogger;
+			logger2: MyLogger;
+			constructor(loggerFactory: () => MyLogger) {
+				this.logger1 = loggerFactory();
+				this.logger2 = loggerFactory();
+			}
+		}
+
+		it("resolving the factory", function(){
+			container.register("logger", MyLogger);
+			container.register("MySampleClass", MySampleClass);
+
+			const cmp = container.resolve("mySampleClass");
+
+			assert.instanceOf(cmp, MySampleClass);
+			assert.instanceOf(cmp.logger1, MyLogger);
+			assert.instanceOf(cmp.logger2, MyLogger);
+
+			// a factory returns always a new instance
+			assert.notEqual(cmp.logger1, cmp.logger2);
+		});
+	});
+
 });
