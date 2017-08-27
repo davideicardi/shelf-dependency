@@ -1,6 +1,6 @@
 {
   "name": "shelf-dependency",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Dependency Injection for node.js",
   "main": "index.js",
   "typings": "index.d.ts",
