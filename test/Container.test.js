@@ -413,6 +413,20 @@ describe("Container", function () {
             // a factory returns always a new instance
             chai_1.assert.notEqual(cmp.logger1, cmp.logger2);
         });
+        class MySampleClassWithList {
+            constructor(loggerListFactory) {
+                this.loggerList = loggerListFactory();
+            }
+        }
+        it("resolving the factory to a list (listFacility)", function () {
+            container.use(ShelfDependency.listFacility);
+            container.register("logger", MyLogger);
+            container.register("MySampleClassWithList", MySampleClassWithList);
+            const cmp = container.resolve("MySampleClassWithList");
+            chai_1.assert.instanceOf(cmp, MySampleClassWithList);
+            chai_1.assert.equal(cmp.loggerList.length, 1);
+            chai_1.assert.instanceOf(cmp.loggerList[0], MyLogger);
+        });
     });
 });
 //# sourceMappingURL=Container.test.js.map

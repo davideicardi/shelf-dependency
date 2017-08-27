@@ -11,12 +11,9 @@ function getDependencies(fn) {
     if (isEs6Class(code)) {
         const constructorStart = "constructor(";
         const constructorPosition = code.indexOf(constructorStart);
-        if (constructorPosition >= 0) {
-            parameters = code.slice(constructorPosition + constructorStart.length, code.indexOf(")"));
-        }
-        else {
-            parameters = "";
-        }
+        parameters = constructorPosition >= 0
+            ? code.slice(constructorPosition + constructorStart.length, code.indexOf(")"))
+            : "";
     }
     else {
         parameters = code.slice(code.indexOf("(") + 1, code.indexOf(")"));
@@ -153,10 +150,10 @@ class Container {
         debug(`Registering ${name} with ${registeredCmp.dependenciesNames}...`);
         cps.push(registeredCmp);
     }
-    registerProperties(obj) {
+    registerProperties(obj, options) {
         for (const key in obj) {
             if (obj.hasOwnProperty(key)) {
-                this.register(key, obj[key]);
+                this.register(key, obj[key], options);
             }
         }
     }
@@ -185,7 +182,6 @@ class Container {
             }
         }
     }
-    ;
     use(facilityFunction) {
         this.facilities.push(facilityFunction);
     }
@@ -202,7 +198,8 @@ class Container {
                     return [{
                             instance: result,
                             options: { lifeStyle: LifeStyle.Transient, tags: [], dependsOn: {} },
-                            dependenciesNames: []
+                            dependenciesNames: [],
+                            fromFacility: true
                         }];
                 }
             }
@@ -240,8 +237,13 @@ class Container {
             }
             return this.resolve(name);
         });
+        // instance are used for singleton, so here I should not use this,
+        // but facilities create "fake" singleton...
+        if (cmp.fromFacility && cmp.instance) {
+            return cmp.instance;
+        }
         if (!cmp.componentFunction) {
-            throw new Error("Invalid component function");
+            throw new Error("Invalid component, function not provided, cannot resolve new instance");
         }
         return createInstance(cmp.componentFunction, dependenciesArgs);
     }

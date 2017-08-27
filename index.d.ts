@@ -24,7 +24,7 @@ export declare class Container {
     resolve(name: string): any;
     resolveNew(name: string, dependencies?: any): any;
     register(name: string, component: any, options?: Partial<RegisterOptions>): void;
-    registerProperties(obj: any): void;
+    registerProperties(obj: any, options?: Partial<RegisterOptions>): void;
     unregister(name?: string, options?: Partial<UnregisterOptions>): void;
     use(facilityFunction: Facility): void;
     private getComponents(name);

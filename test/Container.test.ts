@@ -538,7 +538,7 @@ describe("Container", function(){
 			container.register("logger", MyLogger);
 			container.register("MySampleClass", MySampleClass);
 
-			const cmp = container.resolve("mySampleClass");
+			const cmp = container.resolve("mySampleClass") as MySampleClass;
 
 			assert.instanceOf(cmp, MySampleClass);
 			assert.instanceOf(cmp.logger1, MyLogger);
@@ -547,6 +547,27 @@ describe("Container", function(){
 			// a factory returns always a new instance
 			assert.notEqual(cmp.logger1, cmp.logger2);
 		});
+
+		class MySampleClassWithList {
+			loggerList: MyLogger[];
+			constructor(loggerListFactory: () => MyLogger[]) {
+				this.loggerList = loggerListFactory();
+			}
+		}
+
+		it("resolving the factory to a list (listFacility)", function(){
+			container.use(ShelfDependency.listFacility);
+
+			container.register("logger", MyLogger);
+			container.register("MySampleClassWithList", MySampleClassWithList);
+
+			const cmp = container.resolve("MySampleClassWithList") as MySampleClassWithList;
+
+			assert.instanceOf(cmp, MySampleClassWithList);
+			assert.equal(cmp.loggerList.length, 1);
+			assert.instanceOf(cmp.loggerList[0], MyLogger);
+		});
+
 	});
 
 });

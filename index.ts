@@ -11,11 +11,9 @@ export function getDependencies(fn: Function): string[] { // tslint:disable-line
 	if (isEs6Class(code)) {
 		const constructorStart = "constructor(";
 		const constructorPosition = code.indexOf(constructorStart);
-		if (constructorPosition >= 0) {
-			parameters = code.slice(constructorPosition + constructorStart.length, code.indexOf(")"));
-		} else {
-			parameters = "";
-		}
+		parameters = constructorPosition >= 0
+		? code.slice(constructorPosition + constructorStart.length, code.indexOf(")"))
+		: "";
 	} else {
 		parameters = code.slice(code.indexOf("(") + 1, code.indexOf(")"));
 	}
@@ -103,6 +101,7 @@ class ComponentInfo {
 	staticDependencies?: Map<string, any>;
 	instance?: any;
 	componentFunction?: Function; // tslint:disable-line:ban-types
+	fromFacility?: boolean;
 }
 
 export class Container {
@@ -195,10 +194,10 @@ export class Container {
 		cps.push(registeredCmp);
 	}
 
-	registerProperties(obj: any): void {
+	registerProperties(obj: any, options?: Partial<RegisterOptions>): void {
 		for (const key in obj) {
 			if (obj.hasOwnProperty(key)) {
-				this.register(key, obj[key]);
+				this.register(key, obj[key], options);
 			}
 		}
 	}
@@ -228,7 +227,7 @@ export class Container {
 				}
 			}
 		}
-	};
+	}
 
 	use(facilityFunction: Facility): void {
 		this.facilities.push(facilityFunction);
@@ -248,7 +247,8 @@ export class Container {
 					return [{
 						instance: result,
 						options: {lifeStyle: LifeStyle.Transient, tags: [], dependsOn: {}},
-						dependenciesNames: []
+						dependenciesNames: [],
+						fromFacility: true
 					}];
 				}
 			}
@@ -296,8 +296,14 @@ export class Container {
 				return this.resolve(name);
 			});
 
+		// instance are used for singleton, so here I should not use this,
+		// but facilities create "fake" singleton...
+		if (cmp.fromFacility && cmp.instance) {
+			return cmp.instance;
+		}
+
 		if (!cmp.componentFunction) {
-			throw new Error("Invalid component function");
+			throw new Error("Invalid component, function not provided, cannot resolve new instance");
 		}
 
 		return createInstance(cmp.componentFunction, dependenciesArgs);
