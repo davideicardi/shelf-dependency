@@ -138,7 +138,7 @@ class Container {
             for (const key in compOptions.dependsOn) {
                 if (compOptions.dependsOn.hasOwnProperty(key)) {
                     const value = compOptions.dependsOn[key];
-                    registeredCmp.staticDependencies.set(key, String(value));
+                    registeredCmp.staticDependencies.set(key, value);
                 }
             }
         }

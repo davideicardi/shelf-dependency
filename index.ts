@@ -40,7 +40,7 @@ export enum LifeStyle {
 export interface RegisterOptions {
 	lifeStyle: LifeStyle;
 	tags: string[];
-	dependsOn: any;
+	dependsOn: {[index: string]: any};
 }
 
 export interface UnregisterOptions {
@@ -178,7 +178,7 @@ export class Container {
 			for (const key in compOptions.dependsOn) {
 				if (compOptions.dependsOn.hasOwnProperty(key)) {
 					const value = compOptions.dependsOn[key];
-					registeredCmp.staticDependencies.set(key, String(value));
+					registeredCmp.staticDependencies.set(key, value);
 				}
 			}
 		}

@@ -380,19 +380,21 @@ describe("Container", function() {
 
 	describe("register with static dependency", function() {
 
-		function Duck(this: any, name: string) {
+		function Duck(this: any, name: string, age: number) {
 			this.name = name;
+			this.age = age;
 		}
 
 		beforeEach(function() {
-			container.register("duck", Duck, { dependsOn: { name: "Donald" } });
+			container.register("duck", Duck, { dependsOn: { name: "Donald", age: 5 } });
 		});
 
 		it("can be resolved with the static dependency", function() {
 			const cmp = container.resolve("duck");
 
 			assert.instanceOf(cmp, Duck);
-			assert.equal(cmp.name, "Donald");
+			assert.strictEqual(cmp.name, "Donald");
+			assert.strictEqual(cmp.age, 5);
 		});
 	});
 

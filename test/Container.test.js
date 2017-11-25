@@ -291,16 +291,18 @@ describe("Container", function () {
         });
     });
     describe("register with static dependency", function () {
-        function Duck(name) {
+        function Duck(name, age) {
             this.name = name;
+            this.age = age;
         }
         beforeEach(function () {
-            container.register("duck", Duck, { dependsOn: { name: "Donald" } });
+            container.register("duck", Duck, { dependsOn: { name: "Donald", age: 5 } });
         });
         it("can be resolved with the static dependency", function () {
             const cmp = container.resolve("duck");
             chai_1.assert.instanceOf(cmp, Duck);
-            chai_1.assert.equal(cmp.name, "Donald");
+            chai_1.assert.strictEqual(cmp.name, "Donald");
+            chai_1.assert.strictEqual(cmp.age, 5);
         });
     });
     describe("resolve components using require (requireFacility)", function () {

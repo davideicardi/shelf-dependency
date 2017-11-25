@@ -6,7 +6,9 @@ export declare enum LifeStyle {
 export interface RegisterOptions {
     lifeStyle: LifeStyle;
     tags: string[];
-    dependsOn: any;
+    dependsOn: {
+        [index: string]: any;
+    };
 }
 export interface UnregisterOptions {
     tags: string[];
