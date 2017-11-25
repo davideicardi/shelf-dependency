@@ -1,11 +1,12 @@
+// tslint:disable-next-line:no-implicit-dependencies
 import {assert} from "chai";
 import * as ShelfDependency from "./../index";
 
-describe("Container", function(){
+describe("Container", function() {
 
 	let container: ShelfDependency.Container;
 
-	beforeEach(function(){
+	beforeEach(function() {
 		container = new ShelfDependency.Container();
 	});
 
@@ -34,7 +35,7 @@ describe("Container", function(){
 		function MyClass1() {
 		}
 
-		beforeEach(function(){
+		beforeEach(function() {
 			container.register("myClass1", MyClass1);
 		});
 
@@ -80,7 +81,7 @@ describe("Container", function(){
 			}
 		}
 
-		beforeEach(function(){
+		beforeEach(function() {
 			container.register("myEs6Class1", MyEs6Class1);
 			container.register("a", {v: "a"});
 			container.register("b", {v: "b"});
@@ -118,29 +119,29 @@ describe("Container", function(){
 			assert.instanceOf(cmp, SocketIO);
 		});
 
-		it("component name can contains dashes", function(){
+		it("component name can contains dashes", function() {
 			const cmp = container.resolve("sql-server");
 
 			assert.instanceOf(cmp, SqlServer);
 		});
 
-		it("component can be resolved without dashes", function(){
+		it("component can be resolved without dashes", function() {
 			const cmp = container.resolve("sqlserver");
 
 			assert.instanceOf(cmp, SqlServer);
 		});
 	});
 
-	describe("component name is case insensitive", function(){
+	describe("component name is case insensitive", function() {
 
 		function MyClass1() {
 		}
 
-		beforeEach(function(){
+		beforeEach(function() {
 			container.register("myClass1", MyClass1);
 		});
 
-		it("can be resolved using any case combination", function(){
+		it("can be resolved using any case combination", function() {
 			const c1 = container.resolve("myClass1");
 			const c2 = container.resolve("myclass1");
 			const c3 = container.resolve("MYCLASS1");
@@ -151,7 +152,7 @@ describe("Container", function(){
 			assert.equal(c2, c3);
 		});
 
-		it("can be resolved using resolveAll with any case combination", function(){
+		it("can be resolved using resolveAll with any case combination", function() {
 			const c1 = container.resolveAll("myClass1")[0];
 			const c2 = container.resolveAll("myclass1")[0];
 			const c3 = container.resolveAll("MYCLASS1")[0];
@@ -215,13 +216,13 @@ describe("Container", function(){
 		function Bianchi() {
 		}
 
-		beforeEach(function(){
+		beforeEach(function() {
 			container.register("car", Ferrari, { tags: ["Ferrari", "italy"] });
 			container.register("car", Porsche, { tags: ["Porsche", "germany"] });
 			container.register("bicycle", Bianchi, { tags: ["Bianchi", "italy"] });
 		});
 
-		it("resolve by name (default)", function(){
+		it("resolve by name (default)", function() {
 			let cmps = container.resolveAll("car");
 			assert.equal(cmps.length, 2);
 			assert.instanceOf(cmps[0], Ferrari);
@@ -231,7 +232,7 @@ describe("Container", function(){
 			assert.instanceOf(cmps[0], Bianchi);
 		});
 
-		it("unregistering components by tags", function(){
+		it("unregistering components by tags", function() {
 			container.unregister(undefined, { tags: ["germany"]});
 
 			let cmps = container.resolveAll("car");
@@ -248,7 +249,7 @@ describe("Container", function(){
 			assert.equal(cmps.length, 0);
 		});
 
-		it("unregistering components by empty tags has no effect", function(){
+		it("unregistering components by empty tags has no effect", function() {
 			container.unregister(undefined, { tags: []});
 
 			let cmps = container.resolveAll("car");
@@ -286,7 +287,7 @@ describe("Container", function(){
 
 		const myInstance1 = {};
 
-		beforeEach(function(){
+		beforeEach(function() {
 			container.register("myClass1", myInstance1);
 		});
 
@@ -301,11 +302,11 @@ describe("Container", function(){
 
 		const myInstance1 = {};
 
-		beforeEach(function(){
-			container.registerProperties( { myClass1: myInstance1 });
+		beforeEach(function() {
+			container.registerProperties({ myClass1: myInstance1 });
 		});
 
-		it("can be resolved", function(){
+		it("can be resolved", function() {
 			const cmp = container.resolve("myClass1");
 
 			assert.equal(cmp, myInstance1);
@@ -331,7 +332,7 @@ describe("Container", function(){
 			container.register("engine", Engine);
 		});
 
-		it("can be resolved", function(){
+		it("can be resolved", function() {
 			const cmp = container.resolve("car");
 
 			assert.instanceOf(cmp, Car);
@@ -344,11 +345,11 @@ describe("Container", function(){
 			this.container = container;
 		}
 
-		beforeEach(function(){
+		beforeEach(function() {
 			container.register("MyFactory1", MyFactory1);
 		});
 
-		it("can be resolved", function(){
+		it("can be resolved", function() {
 			const cmp = container.resolve("MyFactory1");
 
 			assert.instanceOf(cmp, MyFactory1);
@@ -362,8 +363,8 @@ describe("Container", function(){
 		function Foo() {
 		}
 
-		beforeEach(function(){
-			container.register("foo", Foo, { lifeStyle: ShelfDependency.LifeStyle.Transient } );
+		beforeEach(function() {
+			container.register("foo", Foo, { lifeStyle: ShelfDependency.LifeStyle.Transient });
 		});
 
 		it("can be resolved and returns always a different instance", function() {
@@ -377,14 +378,14 @@ describe("Container", function(){
 		});
 	});
 
-	describe("register with static dependency", function(){
+	describe("register with static dependency", function() {
 
 		function Duck(this: any, name: string) {
 			this.name = name;
 		}
 
-		beforeEach(function(){
-			container.register("duck", Duck, { dependsOn: { name: "Donald" } } );
+		beforeEach(function() {
+			container.register("duck", Duck, { dependsOn: { name: "Donald" } });
 		});
 
 		it("can be resolved with the static dependency", function() {
@@ -438,14 +439,14 @@ describe("Container", function(){
 			this._loggerList = loggerList;
 		}
 
-		beforeEach(function(){
+		beforeEach(function() {
 			container.use(ShelfDependency.listFacility);
 			container.register("logger", MyLogger1);
 			container.register("logger", MyLogger2);
 			container.register("MySampleClass", MySampleClass);
 		});
 
-		it("resolving", function(){
+		it("resolving", function() {
 			const cmp = container.resolve("MySampleClass");
 
 			assert.instanceOf(cmp, MySampleClass);
@@ -455,7 +456,7 @@ describe("Container", function(){
 		});
 	});
 
-	describe("resolve a factory function (factoryFacility)", function(){
+	describe("resolve a factory function (factoryFacility)", function() {
 
 		beforeEach(function() {
 			container.use(ShelfDependency.factoryFacility);
@@ -468,7 +469,7 @@ describe("Container", function(){
 			this.logger2 = loggerFactory();
 		}
 
-		it("resolving the factory", function(){
+		it("resolving the factory", function() {
 			container.register("logger", MyLogger);
 			container.register("MySampleClass", MySampleClass);
 
@@ -487,7 +488,7 @@ describe("Container", function(){
 			this.anotherParam = anotherParam;
 		}
 
-		it("calling the factory with custom dependencies", function(){
+		it("calling the factory with custom dependencies", function() {
 			container.register("MyComponent", MyComponent);
 
 			const factory = container.resolve("myComponentFactory");
@@ -506,7 +507,7 @@ describe("Container", function(){
 			assert.equal(cmp2.anotherParam, "test2");
 		});
 
-		it("factory custom dependencies are case sensitive", function(){
+		it("factory custom dependencies are case sensitive", function() {
 			container.register("MyComponent", MyComponent);
 
 			const factory = container.resolve("myComponentFactory");
@@ -517,7 +518,7 @@ describe("Container", function(){
 		});
 	});
 
-	describe("resolve a typescript typed factory function (factoryFacility)", function(){
+	describe("resolve a typescript typed factory function (factoryFacility)", function() {
 
 		beforeEach(function() {
 			container.use(ShelfDependency.factoryFacility);
@@ -534,7 +535,7 @@ describe("Container", function(){
 			}
 		}
 
-		it("resolving the factory", function(){
+		it("resolving the factory", function() {
 			container.register("logger", MyLogger);
 			container.register("MySampleClass", MySampleClass);
 
@@ -555,7 +556,7 @@ describe("Container", function(){
 			}
 		}
 
-		it("resolving the factory to a list (listFacility)", function(){
+		it("resolving the factory to a list (listFacility)", function() {
 			container.use(ShelfDependency.listFacility);
 
 			container.register("logger", MyLogger);

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable-next-line:no-implicit-dependencies
 const chai_1 = require("chai");
 const index_1 = require("./../index");
 describe("Dependencies functions", function () {

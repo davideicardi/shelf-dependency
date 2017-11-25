@@ -24,16 +24,16 @@
   },
   "homepage": "https://github.com/davideicardi/shelf-dependency",
   "devDependencies": {
-    "@types/chai": "4.0.2",
-    "@types/mocha": "2.2.41",
-    "@types/node": "8.0.19",
-    "chai": "4.1.1",
-    "mocha": "3.5.0",
-    "tslint": "5.5.0",
-    "typescript": "2.4.2"
+    "@types/chai": "4.0.5",
+    "@types/mocha": "2.2.44",
+    "@types/node": "8.0.53",
+    "chai": "4.1.2",
+    "mocha": "4.0.1",
+    "tslint": "5.8.0",
+    "typescript": "2.6.1"
   },
   "dependencies": {
     "@types/debug": "0.0.30",
-    "debug": "2.6.8"
+    "debug": "3.1.0"
   }
 }
