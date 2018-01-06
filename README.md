@@ -5,19 +5,26 @@
 **shelf-dependency** is an [Dependency Injection](http://en.wikipedia.org/wiki/Dependency_injection) container for Node.js applications.
 It allows Dependency Injection and [Inversion Of Control](http://en.wikipedia.org/wiki/Inversion_of_control) inside Javascript/Typescript classes (or constructor functions).
 
-Main goals of **shelf-dependency** are:
+## Features
 
 - easy and unobstrusive dependencies declaration
 - no decorators or special requirements
-- es6 class or constructor function (legacy class declaration)
-- Typescript support
+- es6/es2015 class or constructor function (legacy class declaration)
 - support for standard `require`
 - easy unit testing for components
 - convention over configuration
 - resolve a list of components
 - resolve factory methods
+- Typescript declarations
+- register/unregister components with tags
 
 This project is inspired by [Castle Windsor](https://github.com/castleproject/Windsor).
+
+## Known limitations
+
+- dependencies are parsed using a very simple regex, this can potentially cause some function/class syntax to be unsupported (especially for future ecmascript implementation)
+- no default value parameters support (default values are ignored)
+- lambda function not supported (and potentially other unusual declaration)
 
 ## Installation
 

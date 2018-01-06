@@ -2,24 +2,30 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Debug = require("debug");
 const debug = Debug("shelf");
-// https://github.com/goatslacker/get-parameter-names
+// Code based on https://github.com/goatslacker/get-parameter-names
 function getDependencies(fn) {
+    // TODO Eval to use more advanced methods like https://github.com/rphansen91/es-arguments
+    // or https://www.npmjs.com/package/recast (parse code to AST)
     const COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
     const code = Function.prototype.toString.call(fn)
         .replace(COMMENTS, "");
-    let parameters;
+    let functionCode;
     if (isEs6Class(code)) {
-        const constructorStart = "constructor(";
-        const constructorPosition = code.indexOf(constructorStart);
-        parameters = constructorPosition >= 0
-            ? code.slice(constructorPosition + constructorStart.length, code.indexOf(")"))
+        const constructorPosition = code.search(/\bconstructor\b/);
+        functionCode = constructorPosition >= 0
+            ? code.substring(constructorPosition)
             : "";
     }
     else {
-        parameters = code.slice(code.indexOf("(") + 1, code.indexOf(")"));
+        functionCode = code;
     }
-    const result = parameters
-        .match(/([^\s,]+)/g);
+    const parametersCode = functionCode.slice(functionCode.indexOf("(") + 1, functionCode.indexOf(")"));
+    const result = parametersCode
+        .replace(/\s/, "")
+        .split(",")
+        .filter((p) => p && p.length > 0)
+        .map((p) => p.split("=")[0].trim()) // handle default values
+        .filter((p) => p && p.length > 0);
     return result === null
         ? []
         : result;

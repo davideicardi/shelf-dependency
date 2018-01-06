@@ -68,7 +68,18 @@ describe("Dependencies es6 class", function () {
     });
     it("get dependencies of a class with spaces inside constructor", function () {
         class TestClass {
+            // tslint:disable-next-line:space-before-function-paren
             constructor(a, b) {
+            }
+        }
+        const dependencies = index_1.getDependencies(TestClass);
+        chai_1.assert.equal(dependencies.length, 2);
+        chai_1.assert.equal(dependencies[0], "a");
+        chai_1.assert.equal(dependencies[1], "b");
+    });
+    it("get dependencies of a class with default parameters", function () {
+        class TestClass {
+            constructor(a, b = 4) {
             }
         }
         const dependencies = index_1.getDependencies(TestClass);

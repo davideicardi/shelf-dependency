@@ -96,6 +96,29 @@ describe("Container", function() {
 		});
 	});
 
+	describe("registering a component using default/optional parameters values", function() {
+		class MyEs6ClassDefParam {
+			constructor(readonly a: any = {}, readonly b: any = {}) {
+			}
+		}
+
+		// NOTE: for now I don't honor default values...
+
+		beforeEach(function() {
+			container.register("myClass", MyEs6ClassDefParam);
+			container.register("a", {v: "a"});
+			container.register("b", {v: "b"});
+		});
+
+		it("can be resolved", function() {
+			const cmp = container.resolve("myClass");
+
+			assert.instanceOf(cmp, MyEs6ClassDefParam);
+			assert.equal(cmp.a.v, "a");
+			assert.equal(cmp.b.v, "b");
+		});
+	});
+
 	describe("when registering or resolving a component special characters are removed from compoonent name", function() {
 		function SocketIO() {
 		}
