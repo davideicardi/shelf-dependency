@@ -46,7 +46,7 @@ A component is a javascript class (or function) and can contains one or more dep
       }
     }
 
-Declare **shelf-dependency** container that will contains all yourcomponents:
+Declare **shelf-dependency** container that will contains all your components:
 
     const ShelfDependency = require("shelf-dependency");
     const container = new ShelfDependency.Container();
@@ -61,6 +61,9 @@ Resolve and use `Bar` component:
     const foo = container.resolve("bar");
     bar.helloBar();
 
+`register` and `resolve` functions should be called only inside a composition root, usually the entry point of your application.
+
+IMPORTANT: Components resolution is done by using a simple name convention, a dependency named `car` will be resolved using a component register as `car` (case insensitive).
 
 See also:
 
@@ -69,9 +72,10 @@ See also:
 
 ## Components
 
-A component can be a class or an already instantiated object. Typescript or ES6 classes are supported:
+A component can be a class or an already instantiated object. Typescript or ES6 classes are supported.
 
-Before ecmascript 6 classes should be created using the legacy function constructor syntax. If you don't know how to create a Javascript class take a look at [Mixu's Node book](http://book.mixu.net/node/ch6.html) for a quick introduction.  
+Before ES6 classes should be created using the legacy function constructor syntax. If you don't know how to create a Javascript legacy class take a look at [Mixu's Node book](http://book.mixu.net/node/ch6.html) for a quick introduction.  
+
 Components are usually considered [singleton](http://en.wikipedia.org/wiki/Singleton_pattern), only one instance of a component will be created and every dependency on that component will receive the same instance. For transient components or to create more than one instance of a component see `factoryFacility` below. 
 
 Components names are case insensitive ('car' is equal to 'CAR') and every dots and dashes are removed ('socket.io' is resolved as 'socketio').
@@ -350,7 +354,7 @@ http://www.mariocasciaro.me/dependency-injection-in-node-js-and-other-architectu
 
 ## License (MIT)
 
-Copyright (c) 2017 Davide Icardi
+Copyright (c) 2018 Davide Icardi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
