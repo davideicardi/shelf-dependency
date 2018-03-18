@@ -350,7 +350,8 @@ assert.equal(cmp._logger.source, "mySource");
 
 ## Other DI modules
 
-http://www.mariocasciaro.me/dependency-injection-in-node-js-and-other-architectural-patterns
+- http://inversify.io/
+- http://www.mariocasciaro.me/dependency-injection-in-node-js-and-other-architectural-patterns
 
 ## License (MIT)
 
