@@ -1,7 +1,7 @@
 export declare function getDependencies(fn: Function): string[];
 export declare enum LifeStyle {
     Singleton = 0,
-    Transient = 1,
+    Transient = 1
 }
 export interface RegisterOptions {
     lifeStyle: LifeStyle;
@@ -29,7 +29,7 @@ export declare class Container {
     registerProperties(obj: any, options?: Partial<RegisterOptions>): void;
     unregister(name?: string, options?: Partial<UnregisterOptions>): void;
     use(facilityFunction: Facility): void;
-    private getComponents(name);
-    private resolveComponent(cmp);
-    private resolveNewComponent(cmp, dependencies?);
+    private getComponents;
+    private resolveComponent;
+    private resolveNewComponent;
 }

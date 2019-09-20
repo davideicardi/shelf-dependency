@@ -72,14 +72,11 @@ function factoryFacility(shelf, name) {
 }
 exports.factoryFacility = factoryFacility;
 function createInstance(classFunction, args) {
-    const params = [classFunction].concat(args);
-    const wrapper = classFunction.bind.apply(classFunction, params);
+    const wrapper = classFunction.bind.apply(classFunction, [classFunction, ...args]);
     return new wrapper();
 }
 function normalizeName(name) {
     return name.toLowerCase().replace(/[\.\-]/, "");
-}
-class ComponentInfo {
 }
 class Container {
     constructor() {
@@ -113,13 +110,13 @@ class Container {
         if (!name) {
             throw new Error("Invalid component name.");
         }
-        const compOptions = Object.assign({}, DefaultRegisterOptions, (options || {}));
+        const compOptions = Object.assign(Object.assign({}, DefaultRegisterOptions), (options || {}));
         name = normalizeName(name);
         if (name === CONTAINER_DEPENDENCY_NAME) {
             throw Error("Cannot register a component called 'container'");
         }
         let registeredCmp;
-        if (typeof component === "function") {
+        if (typeof component === "function") { // function or es6 class
             registeredCmp = {
                 options: compOptions,
                 componentFunction: component,

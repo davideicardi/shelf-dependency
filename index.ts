@@ -90,11 +90,9 @@ export function factoryFacility(shelf: Container, name: string) {
 }
 
 function createInstance(classFunction: Function, args: any[]) { // tslint:disable-line:ban-types
-		const params = [classFunction].concat(args);
+	const wrapper = classFunction.bind.apply(classFunction, [classFunction, ...args]);
 
-		const wrapper = classFunction.bind.apply(classFunction, params);
-
-		return new wrapper();
+	return new wrapper();
 }
 
 function normalizeName(name: string) {
@@ -103,7 +101,7 @@ function normalizeName(name: string) {
 
 export type Facility = (shelf: Container, name: string) => any;
 
-class ComponentInfo {
+interface ComponentInfo {
 	options: RegisterOptions;
 	dependenciesNames: string[];
 	staticDependencies?: Map<string, any>;
