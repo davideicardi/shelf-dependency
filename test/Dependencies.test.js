@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-implicit-dependencies
 const chai_1 = require("chai");
 const index_1 = require("./../index");
 describe("Dependencies functions", function () {
@@ -68,7 +67,6 @@ describe("Dependencies es6 class", function () {
     });
     it("get dependencies of a class with spaces inside constructor", function () {
         class TestClass {
-            // tslint:disable-next-line:space-before-function-paren
             constructor(a, b) {
             }
         }

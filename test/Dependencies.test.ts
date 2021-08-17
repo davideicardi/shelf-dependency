@@ -1,4 +1,3 @@
-// tslint:disable-next-line:no-implicit-dependencies
 import {assert} from "chai";
 import {getDependencies} from "./../index";
 
@@ -84,7 +83,6 @@ describe("Dependencies es6 class", function() {
 
 	it("get dependencies of a class with spaces inside constructor", function() {
 		class TestClass {
-			// tslint:disable-next-line:space-before-function-paren
 			constructor (a: any , b: any) {
 			}
 		}
