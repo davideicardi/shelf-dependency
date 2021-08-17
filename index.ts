@@ -2,7 +2,7 @@ import * as Debug from "debug";
 const debug = Debug("shelf");
 
 // Code based on https://github.com/goatslacker/get-parameter-names
-export function getDependencies(fn: Function): string[] { // tslint:disable-line:ban-types
+export function getDependencies(fn: Function): string[] {
 	// TODO Eval to use more advanced methods like https://github.com/rphansen91/es-arguments
 	// or https://www.npmjs.com/package/recast (parse code to AST)
 
@@ -89,7 +89,7 @@ export function factoryFacility(shelf: Container, name: string) {
 	return null;
 }
 
-function createInstance(classFunction: Function, args: any[]) { // tslint:disable-line:ban-types
+function createInstance(classFunction: Function, args: any[]) {
 	const wrapper = classFunction.bind.apply(classFunction, [classFunction, ...args]);
 
 	return new wrapper();
@@ -106,7 +106,7 @@ interface ComponentInfo {
 	dependenciesNames: string[];
 	staticDependencies?: Map<string, any>;
 	instance?: any;
-	componentFunction?: Function; // tslint:disable-line:ban-types
+	componentFunction?: Function;
 	fromFacility?: boolean;
 }
 

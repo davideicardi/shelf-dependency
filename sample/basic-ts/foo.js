@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Foo = void 0;
 class Foo {
     constructor(bar, logger) {
         this.bar = bar;

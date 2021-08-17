@@ -1,4 +1,3 @@
-// tslint:disable-next-line:no-implicit-dependencies
 import {assert} from "chai";
 import * as ShelfDependency from "./../index";
 
@@ -364,7 +363,7 @@ describe("Container", function() {
 	});
 
 	describe("register a component having a dependency to container-dependency itself", function() {
-		function MyFactory1(this: any, container: any) { // tslint:disable-line
+		function MyFactory1(this: any, container: any) {
 			this.container = container;
 		}
 

@@ -111,7 +111,7 @@ module.exports = Car;
 
 In the above case **shelf-dependency** when instantiating Car class will pass on the constructor an instance of the engine and logger components. engine and logger parameters are called dependencies.
 
-Component can also be object instance, the difference is that in this case is your responsability to create the object.
+Component can also be object instance, the difference is that in this case is your responsibility to create the object.
 
 ## Container class
 
@@ -355,7 +355,7 @@ assert.equal(cmp._logger.source, "mySource");
 
 ## License (MIT)
 
-Copyright (c) 2018 Davide Icardi
+Copyright (c) 2021 Davide Icardi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
